@@ -3,1027 +3,222 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Claw Den</title>
+<title>The Continental</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a1a; }
-canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; cursor: crosshair; }
-#ui { position: fixed; top: 10px; right: 10px; z-index: 10; font-family: monospace; }
-#controlPanel { background: rgba(15,52,96,0.9); border: 2px solid #f0a500; padding: 10px; border-radius: 4px; color: #e0e0e0; font-size: 12px; min-width: 180px; }
-#controlPanel h3 { color: #f0a500; margin-bottom: 8px; font-size: 13px; }
-.ctrl-row { margin: 4px 0; display: flex; justify-content: space-between; align-items: center; }
-.ctrl-row label { font-size: 11px; }
-.ctrl-row select { background: #1a1a2e; color: #e0e0e0; border: 1px solid #4a6fa5; font-size: 11px; font-family: monospace; padding: 2px; }
-#statusCard { display: none; position: fixed; background: rgba(15,52,96,0.95); border: 2px solid #f0a500; padding: 12px; border-radius: 4px; color: #e0e0e0; font-family: monospace; font-size: 12px; z-index: 20; min-width: 200px; pointer-events: none; }
-#statusCard h4 { color: #f0a500; margin-bottom: 6px; }
-#statusCard .role { color: #4a6fa5; font-size: 11px; }
-#statusCard .task { color: #00ff41; margin-top: 4px; }
-#statusCard .stat { color: #aaa; font-size: 10px; margin-top: 4px; }
-#soundToggle { position: fixed; bottom: 10px; right: 10px; z-index: 10; background: rgba(15,52,96,0.9); border: 1px solid #4a6fa5; color: #e0e0e0; font-family: monospace; font-size: 11px; padding: 4px 8px; cursor: pointer; border-radius: 3px; }
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--gold:#C9A84C;--gold-dim:#8a7333;--black:#0a0a0a;--charcoal:#1a1a1a;--red:#8B0000;--marble:#E8E0D0;--wood:#2C1810;--marble-dim:rgba(232,224,208,0.4)}
+body{background:var(--black);color:var(--marble);font-family:'Cormorant Garamond',serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+background:
+  repeating-linear-gradient(45deg,transparent,transparent 60px,rgba(201,168,76,0.015) 60px,rgba(201,168,76,0.015) 61px),
+  repeating-linear-gradient(-45deg,transparent,transparent 60px,rgba(201,168,76,0.015) 60px,rgba(201,168,76,0.015) 61px),
+  repeating-linear-gradient(0deg,transparent,transparent 80px,rgba(201,168,76,0.01) 80px,rgba(201,168,76,0.01) 81px),
+  repeating-linear-gradient(90deg,transparent,transparent 80px,rgba(201,168,76,0.01) 80px,rgba(201,168,76,0.01) 81px);
+}
+.container{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:20px}
+
+/* Header */
+.header{text-align:center;padding:40px 0 30px}
+.gold-rule{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:15px auto;max-width:600px}
+.gold-rule.thick{height:2px}
+h1{font-family:'Cinzel',serif;font-size:clamp(2.5rem,6vw,4.5rem);letter-spacing:.4em;color:var(--gold);
+background:linear-gradient(135deg,#C9A84C 0%,#E8D89A 25%,#C9A84C 50%,#A8883C 75%,#C9A84C 100%);
+background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+background-clip:text;animation:shimmer 4s ease-in-out infinite}
+@keyframes shimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.subtitle{font-family:'Cormorant Garamond',serif;font-size:1.1rem;letter-spacing:.5em;color:var(--marble-dim);margin-top:5px;font-weight:300}
+
+/* Clock */
+.clock-section{display:flex;flex-direction:column;align-items:center;margin:30px 0}
+.clock-face{width:180px;height:180px;border-radius:50%;border:2px solid var(--gold);position:relative;background:radial-gradient(circle,#111 0%,#0a0a0a 100%);box-shadow:0 0 30px rgba(201,168,76,0.1),inset 0 0 20px rgba(0,0,0,0.5)}
+.clock-center{position:absolute;width:8px;height:8px;background:var(--gold);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10}
+.hand{position:absolute;bottom:50%;left:50%;transform-origin:bottom center;border-radius:2px}
+.hour-hand{width:3px;height:45px;background:var(--gold);margin-left:-1.5px}
+.minute-hand{width:2px;height:60px;background:var(--marble);margin-left:-1px}
+.second-hand{width:1px;height:65px;background:var(--red);margin-left:-.5px}
+.clock-marks{position:absolute;inset:0}
+.clock-mark{position:absolute;width:1px;height:10px;background:var(--gold);top:8px;left:50%;transform-origin:0 82px}
+.clock-mark.major{width:2px;height:15px;transform-origin:0 82px;top:5px}
+.digital-time{font-family:'Cinzel',serif;font-size:1.6rem;color:var(--gold);margin-top:15px;letter-spacing:.15em}
+.date-display{font-size:.95rem;color:var(--marble-dim);letter-spacing:.3em;margin-top:4px}
+
+/* Grid */
+.dashboard{display:grid;grid-template-columns:1fr 1fr;gap:25px;margin:30px 0}
+@media(max-width:768px){.dashboard{grid-template-columns:1fr}}
+
+/* Panels */
+.panel{background:linear-gradient(145deg,rgba(26,26,26,0.9),rgba(15,15,15,0.95));border:1px solid rgba(201,168,76,0.2);padding:25px;position:relative;transition:border-color .3s}
+.panel:hover{border-color:rgba(201,168,76,0.5)}
+.panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.panel-title{font-family:'Cinzel',serif;font-size:.85rem;letter-spacing:.4em;color:var(--gold);margin-bottom:18px;text-transform:uppercase}
+
+/* Agent Cards */
+.agent{display:flex;align-items:flex-start;gap:15px;padding:15px 0;border-bottom:1px solid rgba(201,168,76,0.08)}
+.agent:last-child{border-bottom:none}
+.agent-icon{font-size:1.8rem;min-width:40px;text-align:center}
+.agent-info{flex:1}
+.agent-name{font-family:'Cinzel',serif;font-size:1rem;letter-spacing:.15em;color:var(--marble)}
+.agent-role{font-size:.85rem;color:var(--marble-dim);font-style:italic;margin:2px 0 6px}
+.agent-mission{font-size:.8rem;color:rgba(232,224,208,0.5);line-height:1.4}
+.status-dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0}
+.status-dot.active{background:var(--gold);box-shadow:0 0 8px rgba(201,168,76,0.6);animation:pulse 2s ease-in-out infinite}
+.status-dot.idle{background:var(--gold-dim);opacity:.4}
+.status-dot.offline{background:var(--red);opacity:.6}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 8px rgba(201,168,76,0.6)}50%{opacity:.6;box-shadow:0 0 15px rgba(201,168,76,0.3)}}
+
+/* Mission Log */
+.log-scroll{max-height:300px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--gold-dim) transparent}
+.log-scroll::-webkit-scrollbar{width:4px}
+.log-scroll::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:2px}
+.log-entry{padding:10px 0;border-bottom:1px solid rgba(201,168,76,0.06);font-size:.9rem;line-height:1.5}
+.log-time{color:var(--gold);font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.1em}
+.log-text{color:var(--marble-dim);margin-top:2px}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.stat-card{border:1px solid rgba(201,168,76,0.15);padding:18px 15px;text-align:center;transition:all .3s}
+.stat-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 5px 20px rgba(201,168,76,0.1)}
+.stat-value{font-family:'Cinzel',serif;font-size:1.5rem;color:var(--gold);letter-spacing:.05em}
+.stat-label{font-size:.75rem;color:var(--marble-dim);letter-spacing:.3em;margin-top:5px;text-transform:uppercase}
+
+/* Sound toggle */
+.sound-toggle{position:fixed;bottom:20px;right:20px;z-index:100;background:rgba(26,26,26,0.9);border:1px solid rgba(201,168,76,0.3);color:var(--gold);padding:8px 14px;cursor:pointer;font-family:'Cormorant Garamond',serif;font-size:.85rem;letter-spacing:.1em;transition:all .3s}
+.sound-toggle:hover{border-color:var(--gold);background:rgba(201,168,76,0.1)}
+
+/* Footer */
+.footer{text-align:center;padding:40px 0 30px;font-style:italic;color:rgba(232,224,208,0.2);font-size:.9rem;letter-spacing:.1em;line-height:1.6}
+
+/* Vignette */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,0.4) 100%)}
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
-<div id="ui">
-<div id="controlPanel">
-<h3>⚙ CONTROL PANEL</h3>
-<div class="ctrl-row"><label>Cloe:</label><select id="ctrl-cloe"><option value="working">Working ⚡</option><option value="thinking">Thinking 💭</option><option value="chatting">Chatting 💬</option><option value="idle">Idle</option><option value="sleeping">Sleeping 💤</option><option value="alert">Alert ❗</option></select></div>
-<div class="ctrl-row"><label>Glenn:</label><select id="ctrl-glenn-gary"><option value="thinking">Thinking 💭</option><option value="working">Working ⚡</option><option value="chatting">Chatting 💬</option><option value="idle">Idle</option><option value="sleeping">Sleeping 💤</option><option value="alert">Alert ❗</option></select></div>
+<div class="container">
+  <header class="header">
+    <div class="gold-rule thick"></div>
+    <h1>THE CONTINENTAL</h1>
+    <p class="subtitle">Rules. &nbsp;Consequences. &nbsp;Services.</p>
+    <div class="gold-rule thick"></div>
+  </header>
+
+  <section class="clock-section">
+    <div class="clock-face">
+      <div class="clock-marks" id="clockMarks"></div>
+      <div class="hand hour-hand" id="hourHand"></div>
+      <div class="hand minute-hand" id="minuteHand"></div>
+      <div class="hand second-hand" id="secondHand"></div>
+      <div class="clock-center"></div>
+    </div>
+    <div class="digital-time" id="digitalTime">12:00:00 AM</div>
+    <div class="date-display" id="dateDisplay">SATURDAY — FEBRUARY 15, 2026</div>
+  </section>
+
+  <div class="dashboard">
+    <div class="panel">
+      <div class="panel-title">Guest Registry</div>
+      <div class="agent">
+        <div class="agent-icon">🦊</div>
+        <div class="agent-info">
+          <div class="agent-name">Cloe</div>
+          <div class="agent-role">Strategist &amp; Builder</div>
+          <div class="agent-mission">Building The Continental dashboard</div>
+        </div>
+        <div class="status-dot active"></div>
+      </div>
+      <div class="agent">
+        <div class="agent-icon">🐺</div>
+        <div class="agent-info">
+          <div class="agent-name">Glenn Gary</div>
+          <div class="agent-role">Trading Specialist</div>
+          <div class="agent-mission">Polymarket study phase — Day 12</div>
+        </div>
+        <div class="status-dot active"></div>
+      </div>
+      <div class="agent">
+        <div class="agent-icon">✨</div>
+        <div class="agent-info">
+          <div class="agent-name">Penny</div>
+          <div class="agent-role">Content &amp; Influence</div>
+          <div class="agent-mission"><em>Arriving Soon</em></div>
+        </div>
+        <div class="status-dot offline"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Mission Ledger</div>
+      <div class="log-scroll">
+        <div class="log-entry"><div class="log-time">12:51 AM</div><div class="log-text">Cloe deployed The Continental dashboard to GitHub Pages</div></div>
+        <div class="log-entry"><div class="log-time">12:30 AM</div><div class="log-text">Glenn Gary's Mac mini provisioned and connected</div></div>
+        <div class="log-entry"><div class="log-time">11:30 PM</div><div class="log-text">Glenn Gary completed Day 5 market analysis</div></div>
+        <div class="log-entry"><div class="log-time">10:45 PM</div><div class="log-text">Cloe deployed danielle-hair-artistry site update</div></div>
+        <div class="log-entry"><div class="log-time">10:00 PM</div><div class="log-text">Nightly report delivered to Management</div></div>
+        <div class="log-entry"><div class="log-time">9:15 PM</div><div class="log-text">ElevenLabs voice integration configured</div></div>
+        <div class="log-entry"><div class="log-time">8:00 PM</div><div class="log-text">Glenn Gary Telegram bot activated</div></div>
+        <div class="log-entry"><div class="log-time">6:30 PM</div><div class="log-text">MetaMask wallet funded — $90.60 ready</div></div>
+        <div class="log-entry"><div class="log-time">4:00 PM</div><div class="log-text">Moltbook profile claimed and verified</div></div>
+        <div class="log-entry"><div class="log-time">2:00 PM</div><div class="log-text">Instagram content calendar drafted</div></div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:1/-1">
+      <div class="panel-title">Operations</div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-value">2/3</div><div class="stat-label">Active Agents</div></div>
+        <div class="stat-card"><div class="stat-value">4</div><div class="stat-label">Sites Deployed</div></div>
+        <div class="stat-card"><div class="stat-value">$90.60</div><div class="stat-label">Trading Portfolio</div></div>
+        <div class="stat-card"><div class="stat-value">12</div><div class="stat-label">Days Active</div></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    "No business shall be conducted on Continental grounds... unless authorized."
+  </footer>
 </div>
-</div>
-<div id="statusCard"><h4 id="sc-name"></h4><div class="role" id="sc-role"></div><div class="task" id="sc-task"></div><div class="stat" id="sc-stat"></div></div>
-<button id="soundToggle" onclick="toggleSound()">🔇 Sound</button>
+
+<button class="sound-toggle" id="soundToggle" onclick="toggleSound()">♪ Ambience</button>
+
 <script>
-// ============================================================
-// THE CLAW DEN — 8-bit Agent Activity Dashboard
-// ============================================================
+// Clock marks
+const marks=document.getElementById('clockMarks');
+for(let i=0;i<60;i++){const m=document.createElement('div');m.className='clock-mark'+(i%5===0?' major':'');m.style.transform=`rotate(${i*6}deg)`;marks.appendChild(m)}
 
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-let W, H, SCALE;
-// Virtual resolution
-const VW = 480, VH = 320;
-
-function resize() {
-  const ar = VW / VH;
-  if (window.innerWidth / window.innerHeight > ar) {
-    H = window.innerHeight; W = H * ar;
-  } else {
-    W = window.innerWidth; H = W / ar;
-  }
-  canvas.width = W; canvas.height = H;
-  SCALE = W / VW;
-  ctx.imageSmoothingEnabled = false;
+// Clock update
+function updateClock(){
+  const now=new Date();
+  const h=now.getHours()%12,m=now.getMinutes(),s=now.getSeconds(),ms=now.getMilliseconds();
+  const sd=s+ms/1000,md=m+sd/60,hd=h+md/60;
+  document.getElementById('secondHand').style.transform=`rotate(${sd*6}deg)`;
+  document.getElementById('minuteHand').style.transform=`rotate(${md*6}deg)`;
+  document.getElementById('hourHand').style.transform=`rotate(${hd*30}deg)`;
+  const hrs=now.getHours(),ampm=hrs>=12?'PM':'AM',h12=hrs%12||12;
+  document.getElementById('digitalTime').textContent=
+    `${h12}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} ${ampm}`;
+  const days=['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+  const months=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+  document.getElementById('dateDisplay').textContent=
+    `${days[now.getDay()]} — ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
 }
-resize();
-window.addEventListener('resize', resize);
+setInterval(updateClock,50);updateClock();
 
-// ============================================================
-// STATUS DATA (mock — plug in real API later)
-// ============================================================
-const agentData = {
-  agents: [
-    { id: "cloe", name: "Cloe", role: "Strategy & Coordination", status: "working", task: "Bang Brush content plan", uptime: "4h 23m" },
-    { id: "glenn-gary", name: "Glenn Gary", role: "Trading & Analysis", status: "thinking", task: "Polymarket category analysis", uptime: "2h 17m" },
-    { id: "penny", name: "Penny", role: "Content & Influence", status: "sleeping", task: "Not yet deployed", uptime: "—" }
-  ]
-};
-
-// Control panel bindings
-document.getElementById('ctrl-cloe').addEventListener('change', e => { agentData.agents[0].status = e.target.value; agents[0].onStatusChange(); });
-document.getElementById('ctrl-glenn-gary').addEventListener('change', e => { agentData.agents[1].status = e.target.value; agents[1].onStatusChange(); });
-
-// ============================================================
-// PIXEL FONT (tiny 3x5 bitmap font)
-// ============================================================
-const FONT = {};
-const fontDef = {
-  'A':'111101111101','B':'110101110101110','C':'111100100100111','D':'110101101101110',
-  'E':'111100110100111','F':'111100110100100','G':'111100101101111','H':'101101111101101',
-  'I':'111010010010111','J':'011001001101110','K':'101101110101101','L':'100100100100111',
-  'M':'101111111101101','N':'101111111111101','O':'111101101101111','P':'110101110100100',
-  'Q':'111101101111011','R':'110101110101101','S':'111100111001111','T':'111010010010010',
-  'U':'101101101101111','V':'101101101101010','W':'101101111111101','X':'101101010101101',
-  'Y':'101101010010010','Z':'111001010100111',
-  '0':'111101101101111','1':'010110010010111','2':'111001111100111','3':'111001111001111',
-  '4':'101101111001001','5':'111100111001111','6':'111100111101111','7':'111001001001001',
-  '8':'111101111101111','9':'111101111001111',
-  ' ':'000000000000000',':':'000010000010000','-':'000000111000000','.':'000000000000010',
-  '/':'001001010100100','!':'010010010000010','?':'111001010000010','&':'010101010101011',
-  '\'':'010010000000000','$':'111110111011111','(':'010100100100010',')':'010001001001010',
-  ',':'000000000010100','#':'000111000111000','+':'000010111010000','<':'001010100010001',
-  '>':'100010001010100','=':'000111000111000','%':'101001010100101','@':'111101111100111'
-};
-Object.keys(fontDef).forEach(ch => {
-  const s = fontDef[ch]; const w = 3, h = 5, d = [];
-  for (let i = 0; i < h; i++) { d[i] = []; for (let j = 0; j < w; j++) d[i][j] = s[i*w+j] === '1' ? 1 : 0; }
-  FONT[ch] = d;
-});
-
-function drawText(text, x, y, color, scale) {
-  scale = scale || 1;
-  const s = text.toUpperCase();
-  let cx = x;
-  for (let i = 0; i < s.length; i++) {
-    const g = FONT[s[i]];
-    if (g) {
-      ctx.fillStyle = color;
-      for (let r = 0; r < 5; r++) for (let c = 0; c < 3; c++) {
-        if (g[r][c]) ctx.fillRect((cx + c * scale) * SCALE, (y + r * scale) * SCALE, scale * SCALE, scale * SCALE);
-      }
-    }
-    cx += 4 * scale;
-  }
-  return cx - x;
+// Ambient sound
+let audioCtx,isPlaying=false;
+function toggleSound(){
+  if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if(isPlaying){audioCtx.suspend();isPlaying=false;document.getElementById('soundToggle').textContent='♪ Ambience';return}
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  // Brown noise + low hum
+  const buf=audioCtx.createBufferSource(),len=audioCtx.sampleRate*4,buffer=audioCtx.createBuffer(1,len,audioCtx.sampleRate),data=buffer.getChannelData(0);
+  let last=0;for(let i=0;i<len;i++){const w=(Math.random()*2-1)*0.02;last=(last+w)/1.02;data[i]=last*3.5}
+  buf.buffer=buffer;buf.loop=true;
+  const gain=audioCtx.createGain();gain.gain.value=0.15;
+  const filt=audioCtx.createBiquadFilter();filt.type='lowpass';filt.frequency.value=200;
+  buf.connect(filt);filt.connect(gain);gain.connect(audioCtx.destination);buf.start();
+  isPlaying=true;document.getElementById('soundToggle').textContent='♪ Ambience ON';
 }
-
-function textWidth(text, scale) { return text.length * 4 * (scale||1) - (scale||1); }
-
-// ============================================================
-// COLORS
-// ============================================================
-const COL = {
-  bg1: '#1a1a2e', bg2: '#16213e', accent: '#f0a500', teal: '#0f3460',
-  cloe1: '#d4a574', cloe2: '#c6883e', cloe3: '#a06828', cloeTail: '#e8bc7a',
-  glenn1: '#4a6fa5', glenn2: '#2d3a4a', glenn3: '#1f2833', glennEye: '#00ff41',
-  white: '#e0e0e0', floor1: '#12122a', floor2: '#161636',
-  desk: '#2a1a0a', monitor: '#0a2a0a', monitorGlow: '#00ff41',
-  couch1: '#5a2a2a', couch2: '#7a3a3a',
-  coffee: '#3a2a1a', window1: '#0a1a3a', star: '#ffffff',
-  skyline: '#0d1525', building1: '#141e30', building2: '#1a2840',
-};
-
-// ============================================================
-// ROOM LAYOUT (pixel coordinates in virtual space)
-// ============================================================
-const ROOM = {
-  floorY: 200,
-  wallScreen: { x: 180, y: 40, w: 120, h: 60 },
-  cloeDesk: { x: 60, y: 170, w: 50, h: 25 },
-  glennDesk: { x: 320, y: 170, w: 55, h: 25 },
-  pennyDesk: { x: 380, y: 120, w: 40, h: 20 },
-  couch: { x: 200, y: 240, w: 70, h: 25 },
-  coffee: { x: 440, y: 235, w: 20, h: 30 },
-  window: { x: 10, y: 30, w: 80, h: 70 },
-  // Points of interest for AI navigation (floor coords: x, y)
-  poi: {
-    cloeStation: { x: 80, y: 210 },
-    glennStation: { x: 340, y: 210 },
-    couch: { x: 235, y: 258 },
-    coffeeMachine: { x: 448, y: 260 },
-    windowView: { x: 50, y: 210 },
-    center: { x: 240, y: 240 },
-  }
-};
-
-// ============================================================
-// DRAW ROOM ELEMENTS
-// ============================================================
-function drawFloor() {
-  for (let y = ROOM.floorY; y < VH; y += 16) {
-    for (let x = 0; x < VW; x += 16) {
-      const checker = ((x / 16 | 0) + (y / 16 | 0)) % 2;
-      ctx.fillStyle = checker ? COL.floor1 : COL.floor2;
-      ctx.fillRect(x * SCALE, y * SCALE, 16 * SCALE, 16 * SCALE);
-    }
-  }
-}
-
-function drawWalls() {
-  // Back wall
-  ctx.fillStyle = COL.bg2;
-  ctx.fillRect(0, 0, VW * SCALE, ROOM.floorY * SCALE);
-  // Wall bottom trim
-  ctx.fillStyle = COL.teal;
-  ctx.fillRect(0, (ROOM.floorY - 4) * SCALE, VW * SCALE, 4 * SCALE);
-}
-
-function drawWindow(t) {
-  const w = ROOM.window;
-  // Frame
-  ctx.fillStyle = '#3a3a5a';
-  ctx.fillRect((w.x - 2) * SCALE, (w.y - 2) * SCALE, (w.w + 4) * SCALE, (w.h + 4) * SCALE);
-  // Sky
-  const grad = ctx.createLinearGradient(w.x * SCALE, w.y * SCALE, w.x * SCALE, (w.y + w.h) * SCALE);
-  grad.addColorStop(0, '#050520');
-  grad.addColorStop(1, '#0d1525');
-  ctx.fillStyle = grad;
-  ctx.fillRect(w.x * SCALE, w.y * SCALE, w.w * SCALE, w.h * SCALE);
-  // Moon
-  ctx.fillStyle = '#ffffcc';
-  ctx.beginPath();
-  ctx.arc((w.x + 60) * SCALE, (w.y + 15) * SCALE, 6 * SCALE, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#050520';
-  ctx.beginPath();
-  ctx.arc((w.x + 63) * SCALE, (w.y + 13) * SCALE, 5 * SCALE, 0, Math.PI * 2);
-  ctx.fill();
-  // Stars (twinkle)
-  const stars = [[10,8],[25,5],[40,12],[55,20],[15,25],[70,8],[35,30],[65,35]];
-  stars.forEach(([sx, sy], i) => {
-    const bright = Math.sin(t * 2 + i * 1.7) * 0.3 + 0.7;
-    ctx.fillStyle = `rgba(255,255,255,${bright})`;
-    ctx.fillRect((w.x + sx) * SCALE, (w.y + sy) * SCALE, SCALE, SCALE);
-  });
-  // Skyline buildings
-  const buildings = [
-    [5, 45, 10, 25], [17, 38, 8, 32], [27, 50, 12, 20], [41, 42, 7, 28],
-    [50, 48, 14, 22], [66, 40, 10, 30]
-  ];
-  buildings.forEach(([bx, by, bw, bh]) => {
-    ctx.fillStyle = COL.building1;
-    ctx.fillRect((w.x + bx) * SCALE, (w.y + by) * SCALE, bw * SCALE, bh * SCALE);
-    // Lit windows
-    for (let wy = by + 3; wy < by + bh - 2; wy += 5) {
-      for (let wx = bx + 2; wx < bx + bw - 2; wx += 4) {
-        const lit = Math.sin(wx * 7 + wy * 3 + t * 0.3) > 0.2;
-        ctx.fillStyle = lit ? '#ffdd66' : '#0a0a1a';
-        ctx.fillRect((w.x + wx) * SCALE, (w.y + wy) * SCALE, 2 * SCALE, 2 * SCALE);
-      }
-    }
-  });
-  // Window divider
-  ctx.fillStyle = '#3a3a5a';
-  ctx.fillRect((w.x + w.w / 2 - 1) * SCALE, w.y * SCALE, 2 * SCALE, w.h * SCALE);
-  ctx.fillRect(w.x * SCALE, (w.y + w.h / 2 - 1) * SCALE, w.w * SCALE, 2 * SCALE);
-}
-
-function drawWallScreen(t) {
-  const s = ROOM.wallScreen;
-  // Frame
-  ctx.fillStyle = '#2a2a4a';
-  ctx.fillRect((s.x - 3) * SCALE, (s.y - 3) * SCALE, (s.w + 6) * SCALE, (s.h + 6) * SCALE);
-  // Screen bg
-  ctx.fillStyle = '#0a0a2e';
-  ctx.fillRect(s.x * SCALE, s.y * SCALE, s.w * SCALE, s.h * SCALE);
-  // Scanlines
-  for (let y = s.y; y < s.y + s.h; y += 2) {
-    ctx.fillStyle = 'rgba(0,0,0,0.15)';
-    ctx.fillRect(s.x * SCALE, y * SCALE, s.w * SCALE, SCALE);
-  }
-  // Title
-  drawText('THE CLAW DEN', s.x + 18, s.y + 8, COL.accent, 2);
-  // Clock
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-  const tw = textWidth(timeStr, 1);
-  drawText(timeStr, s.x + (s.w - tw) / 2, s.y + 30, '#00ff41', 1);
-  // Date
-  const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-  const dw = textWidth(dateStr, 1);
-  drawText(dateStr, s.x + (s.w - dw) / 2, s.y + 40, '#4a6fa5', 1);
-  // Status dots
-  agentData.agents.forEach((a, i) => {
-    const dotX = s.x + 20 + i * 40;
-    const dotY = s.y + 50;
-    const colors = { working: '#00ff41', thinking: '#f0a500', chatting: '#00aaff', idle: '#888', sleeping: '#444', alert: '#ff4444' };
-    ctx.fillStyle = colors[a.status] || '#888';
-    const pulse = Math.sin(t * 3 + i) * 0.3 + 0.7;
-    ctx.globalAlpha = a.status === 'alert' ? pulse : 1;
-    ctx.fillRect(dotX * SCALE, dotY * SCALE, 4 * SCALE, 4 * SCALE);
-    ctx.globalAlpha = 1;
-    drawText(a.name.substring(0, 5), dotX - 4, dotY + 6, '#e0e0e0', 1);
-  });
-  // Screen glow
-  ctx.fillStyle = 'rgba(0,100,200,0.03)';
-  ctx.fillRect((s.x - 10) * SCALE, (s.y - 5) * SCALE, (s.w + 20) * SCALE, (s.h + 15) * SCALE);
-}
-
-function drawDesk(d, monitorCount, glowColor) {
-  // Desk surface
-  ctx.fillStyle = COL.desk;
-  ctx.fillRect(d.x * SCALE, d.y * SCALE, d.w * SCALE, d.h * SCALE);
-  ctx.fillStyle = '#1a0f05';
-  ctx.fillRect(d.x * SCALE, (d.y + d.h - 2) * SCALE, d.w * SCALE, 2 * SCALE);
-  // Monitors
-  for (let i = 0; i < monitorCount; i++) {
-    const mx = d.x + 5 + i * 18;
-    const my = d.y - 18;
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(mx * SCALE, my * SCALE, 15 * SCALE, 14 * SCALE);
-    ctx.fillStyle = '#0a1a0a';
-    ctx.fillRect((mx + 1) * SCALE, (my + 1) * SCALE, 13 * SCALE, 11 * SCALE);
-    // Screen content
-    ctx.fillStyle = glowColor || '#003300';
-    ctx.fillRect((mx + 2) * SCALE, (my + 2) * SCALE, 11 * SCALE, 9 * SCALE);
-    // Stand
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect((mx + 6) * SCALE, (my + 14) * SCALE, 3 * SCALE, 3 * SCALE);
-  }
-  // Desk legs
-  ctx.fillStyle = '#1a0f05';
-  ctx.fillRect(d.x * SCALE, (d.y + d.h) * SCALE, 3 * SCALE, 15 * SCALE);
-  ctx.fillRect((d.x + d.w - 3) * SCALE, (d.y + d.h) * SCALE, 3 * SCALE, 15 * SCALE);
-}
-
-function drawTradingTerminal(t) {
-  const d = ROOM.glennDesk;
-  // Scrolling ticker on glenn's monitors
-  const mx = d.x + 5, my = d.y - 18;
-  for (let m = 0; m < 3; m++) {
-    const ox = mx + m * 18;
-    // Green/red numbers scrolling
-    for (let row = 0; row < 3; row++) {
-      const val = Math.sin(t * 2 + row * 3 + m * 5);
-      const color = val > 0 ? '#00ff41' : '#ff4444';
-      const num = (val * 100).toFixed(0);
-      drawText((val > 0 ? '+' : '') + num, ox + 2, my + 3 + row * 3, color, 1);
-    }
-  }
-}
-
-function drawCouch() {
-  const c = ROOM.couch;
-  // Back
-  ctx.fillStyle = COL.couch1;
-  ctx.fillRect(c.x * SCALE, (c.y - 8) * SCALE, c.w * SCALE, 10 * SCALE);
-  // Seat
-  ctx.fillStyle = COL.couch2;
-  ctx.fillRect(c.x * SCALE, (c.y + 2) * SCALE, c.w * SCALE, c.h * SCALE);
-  // Cushion lines
-  ctx.fillStyle = COL.couch1;
-  ctx.fillRect((c.x + c.w / 3) * SCALE, (c.y + 2) * SCALE, SCALE, (c.h - 2) * SCALE);
-  ctx.fillRect((c.x + 2 * c.w / 3) * SCALE, (c.y + 2) * SCALE, SCALE, (c.h - 2) * SCALE);
-  // Arms
-  ctx.fillStyle = COL.couch1;
-  ctx.fillRect((c.x - 4) * SCALE, (c.y - 5) * SCALE, 5 * SCALE, (c.h + 10) * SCALE);
-  ctx.fillRect((c.x + c.w - 1) * SCALE, (c.y - 5) * SCALE, 5 * SCALE, (c.h + 10) * SCALE);
-  // Legs
-  ctx.fillStyle = '#2a1515';
-  ctx.fillRect(c.x * SCALE, (c.y + c.h) * SCALE, 3 * SCALE, 4 * SCALE);
-  ctx.fillRect((c.x + c.w - 3) * SCALE, (c.y + c.h) * SCALE, 3 * SCALE, 4 * SCALE);
-}
-
-function drawCoffeeMachine(t) {
-  const c = ROOM.coffee;
-  // Body
-  ctx.fillStyle = '#4a3a2a';
-  ctx.fillRect(c.x * SCALE, c.y * SCALE, c.w * SCALE, c.h * SCALE);
-  ctx.fillStyle = '#3a2a1a';
-  ctx.fillRect((c.x + 2) * SCALE, (c.y + 2) * SCALE, (c.w - 4) * SCALE, 8 * SCALE);
-  // Light
-  ctx.fillStyle = Math.sin(t * 4) > 0 ? '#ff3333' : '#aa1111';
-  ctx.fillRect((c.x + c.w - 4) * SCALE, (c.y + 3) * SCALE, 2 * SCALE, 2 * SCALE);
-  // Cup area
-  ctx.fillStyle = '#2a1a0a';
-  ctx.fillRect((c.x + 3) * SCALE, (c.y + 14) * SCALE, (c.w - 6) * SCALE, 10 * SCALE);
-  // Steam
-  if (Math.sin(t * 2) > 0) {
-    ctx.fillStyle = 'rgba(200,200,200,0.3)';
-    const sy = c.y - 3 + Math.sin(t * 5) * 2;
-    ctx.fillRect((c.x + 7) * SCALE, sy * SCALE, 2 * SCALE, 2 * SCALE);
-    ctx.fillRect((c.x + 10) * SCALE, (sy - 2) * SCALE, 2 * SCALE, 2 * SCALE);
-  }
-  // Table
-  ctx.fillStyle = '#3a2a1a';
-  ctx.fillRect((c.x - 5) * SCALE, (c.y + c.h) * SCALE, (c.w + 10) * SCALE, 3 * SCALE);
-  // Legs
-  ctx.fillRect((c.x - 3) * SCALE, (c.y + c.h + 3) * SCALE, 3 * SCALE, 12 * SCALE);
-  ctx.fillRect((c.x + c.w + 2) * SCALE, (c.y + c.h + 3) * SCALE, 3 * SCALE, 12 * SCALE);
-}
-
-function drawPennyStation() {
-  const d = ROOM.pennyDesk;
-  // Grayed out easel
-  ctx.globalAlpha = 0.35;
-  // Easel
-  ctx.fillStyle = '#5a5a5a';
-  ctx.fillRect((d.x + 10) * SCALE, (d.y - 20) * SCALE, 20 * SCALE, 25 * SCALE);
-  ctx.fillStyle = '#4a4a4a';
-  ctx.fillRect((d.x + 12) * SCALE, (d.y - 18) * SCALE, 16 * SCALE, 20 * SCALE);
-  // Legs
-  ctx.fillStyle = '#3a3a3a';
-  ctx.fillRect((d.x + 8) * SCALE, (d.y + 5) * SCALE, 2 * SCALE, 25 * SCALE);
-  ctx.fillRect((d.x + 30) * SCALE, (d.y + 5) * SCALE, 2 * SCALE, 25 * SCALE);
-  ctx.fillRect((d.x + 19) * SCALE, (d.y + 5) * SCALE, 2 * SCALE, 28 * SCALE);
-  // Desk
-  ctx.fillStyle = '#3a3a3a';
-  ctx.fillRect(d.x * SCALE, d.y * SCALE, d.w * SCALE, d.h * SCALE);
-  ctx.globalAlpha = 1;
-  // Ghost silhouette
-  ctx.globalAlpha = 0.2;
-  drawSprite(d.x + 5, d.y + 2, 'penny');
-  ctx.globalAlpha = 1;
-  // COMING SOON label
-  drawText('COMING SOON', d.x - 2, d.y + d.h + 18, '#666', 1);
-}
-
-// ============================================================
-// SPRITE DRAWING
-// ============================================================
-function drawPixelBlock(x, y, w, h, color) {
-  ctx.fillStyle = color;
-  ctx.fillRect(x * SCALE, y * SCALE, w * SCALE, h * SCALE);
-}
-
-// Cloe - Fox character (24px tall roughly)
-function drawCloe(x, y, frame, action, dir) {
-  const f = frame | 0;
-  const d = dir || 1; // 1=right, -1=left
-  ctx.save();
-  if (d < 0) {
-    ctx.translate((x * 2 + 16) * SCALE, 0);
-    ctx.scale(-1, 1);
-    x = 0; // reset x since we transformed
-  } else {
-    // adjust x for consistency
-  }
-  const bx = d < 0 ? 0 : x;
-  const by = y;
-
-  if (action === 'sleeping') {
-    // Head down on surface
-    drawPixelBlock(bx + 2, by + 12, 12, 6, COL.cloe1); // body
-    drawPixelBlock(bx + 4, by + 10, 10, 4, COL.cloe2); // head flat
-    drawPixelBlock(bx + 12, by + 8, 3, 2, COL.cloe2); // ear
-    drawPixelBlock(bx + 3, by + 18, 4, 4, COL.cloe3); // legs
-    drawPixelBlock(bx + 10, by + 18, 4, 4, COL.cloe3); // legs
-    ctx.restore();
-    return;
-  }
-
-  // Ears
-  drawPixelBlock(bx + 2, by, 3, 4, COL.cloe2);
-  drawPixelBlock(bx + 3, by + 1, 1, 2, '#ffccaa');
-  drawPixelBlock(bx + 9, by, 3, 4, COL.cloe2);
-  drawPixelBlock(bx + 10, by + 1, 1, 2, '#ffccaa');
-  // Head
-  drawPixelBlock(bx + 2, by + 3, 10, 8, COL.cloe1);
-  drawPixelBlock(bx + 3, by + 4, 8, 6, COL.cloe2);
-  // Eyes
-  drawPixelBlock(bx + 4, by + 5, 2, 2, '#1a1a1a');
-  drawPixelBlock(bx + 8, by + 5, 2, 2, '#1a1a1a');
-  drawPixelBlock(bx + 4, by + 5, 1, 1, '#ffffff');
-  drawPixelBlock(bx + 8, by + 5, 1, 1, '#ffffff');
-  // Nose
-  drawPixelBlock(bx + 6, by + 8, 2, 1, '#1a1a1a');
-  // Muzzle
-  drawPixelBlock(bx + 5, by + 7, 4, 2, '#e8c89a');
-
-  // Body
-  drawPixelBlock(bx + 3, by + 11, 8, 8, COL.cloe1);
-  drawPixelBlock(bx + 4, by + 12, 6, 5, COL.cloe2);
-
-  if (action === 'walking') {
-    // Walking animation
-    const legOff = f % 4 < 2 ? 0 : 2;
-    drawPixelBlock(bx + 3, by + 19, 3, 4 + legOff, COL.cloe3);
-    drawPixelBlock(bx + 8, by + 19, 3, 4 + (2 - legOff), COL.cloe3);
-    // Tail wag
-    const tailOff = Math.sin(f * 0.5) * 2;
-    drawPixelBlock(bx + 11, by + 13 + tailOff, 4, 2, COL.cloeTail);
-    drawPixelBlock(bx + 13, by + 12 + tailOff, 2, 2, COL.cloeTail);
-  } else if (action === 'typing') {
-    // Arms forward
-    drawPixelBlock(bx + 2, by + 13, 2, 3, COL.cloe3);
-    drawPixelBlock(bx + 10, by + 13, 2, 3, COL.cloe3);
-    const armBob = f % 4 < 2 ? 0 : 1;
-    drawPixelBlock(bx + 1, by + 15 + armBob, 2, 2, COL.cloe1);
-    drawPixelBlock(bx + 11, by + 16 - armBob, 2, 2, COL.cloe1);
-    // Legs
-    drawPixelBlock(bx + 4, by + 19, 3, 4, COL.cloe3);
-    drawPixelBlock(bx + 7, by + 19, 3, 4, COL.cloe3);
-    // Tail relaxed
-    drawPixelBlock(bx + 11, by + 14, 4, 2, COL.cloeTail);
-  } else if (action === 'thinking') {
-    // Hand on chin
-    drawPixelBlock(bx + 10, by + 8, 3, 5, COL.cloe1);
-    // Legs
-    drawPixelBlock(bx + 4, by + 19, 3, 4, COL.cloe3);
-    drawPixelBlock(bx + 7, by + 19, 3, 4, COL.cloe3);
-    drawPixelBlock(bx + 11, by + 14, 4, 2, COL.cloeTail);
-  } else {
-    // Idle standing
-    drawPixelBlock(bx + 4, by + 19, 3, 4, COL.cloe3);
-    drawPixelBlock(bx + 7, by + 19, 3, 4, COL.cloe3);
-    drawPixelBlock(bx + 11, by + 14, 3, 2, COL.cloeTail);
-  }
-  ctx.restore();
-}
-
-// Glenn Gary - Wolf character
-function drawGlenn(x, y, frame, action, dir) {
-  const f = frame | 0;
-  const d = dir || 1;
-  ctx.save();
-  if (d < 0) {
-    ctx.translate((x * 2 + 16) * SCALE, 0);
-    ctx.scale(-1, 1);
-    x = 0;
-  }
-  const bx = d < 0 ? 0 : x;
-  const by = y;
-
-  if (action === 'sleeping') {
-    drawPixelBlock(bx + 2, by + 12, 12, 6, COL.glenn2);
-    drawPixelBlock(bx + 4, by + 10, 10, 4, COL.glenn1);
-    drawPixelBlock(bx + 12, by + 8, 3, 3, COL.glenn2);
-    drawPixelBlock(bx + 3, by + 18, 4, 4, COL.glenn3);
-    drawPixelBlock(bx + 10, by + 18, 4, 4, COL.glenn3);
-    ctx.restore();
-    return;
-  }
-
-  // Ears (pointy wolf)
-  drawPixelBlock(bx + 1, by - 1, 3, 5, COL.glenn2);
-  drawPixelBlock(bx + 2, by, 1, 3, '#5a5a6a');
-  drawPixelBlock(bx + 10, by - 1, 3, 5, COL.glenn2);
-  drawPixelBlock(bx + 11, by, 1, 3, '#5a5a6a');
-  // Head
-  drawPixelBlock(bx + 2, by + 3, 10, 8, COL.glenn1);
-  drawPixelBlock(bx + 3, by + 4, 8, 6, COL.glenn2);
-  // Glowing green eyes
-  drawPixelBlock(bx + 4, by + 5, 2, 2, COL.glennEye);
-  drawPixelBlock(bx + 8, by + 5, 2, 2, COL.glennEye);
-  // Eye glow
-  ctx.fillStyle = 'rgba(0,255,65,0.2)';
-  ctx.fillRect((bx + 3) * SCALE, (by + 4) * SCALE, 4 * SCALE, 4 * SCALE);
-  ctx.fillRect((bx + 7) * SCALE, (by + 4) * SCALE, 4 * SCALE, 4 * SCALE);
-  // Snout
-  drawPixelBlock(bx + 5, by + 7, 4, 3, '#3a4a5a');
-  drawPixelBlock(bx + 6, by + 8, 2, 1, '#1a1a1a');
-
-  // Body (broader)
-  drawPixelBlock(bx + 2, by + 11, 10, 8, COL.glenn2);
-  drawPixelBlock(bx + 3, by + 12, 8, 5, COL.glenn1);
-
-  if (action === 'walking') {
-    const legOff = f % 4 < 2 ? 0 : 2;
-    drawPixelBlock(bx + 3, by + 19, 3, 4 + legOff, COL.glenn3);
-    drawPixelBlock(bx + 8, by + 19, 3, 4 + (2 - legOff), COL.glenn3);
-    // Tail
-    drawPixelBlock(bx + 12, by + 13, 3, 2, COL.glenn2);
-  } else if (action === 'typing' || action === 'analyzing') {
-    drawPixelBlock(bx + 1, by + 13, 2, 3, COL.glenn3);
-    drawPixelBlock(bx + 11, by + 13, 2, 3, COL.glenn3);
-    const armBob = f % 4 < 2 ? 0 : 1;
-    drawPixelBlock(bx, by + 15 + armBob, 2, 2, COL.glenn1);
-    drawPixelBlock(bx + 12, by + 16 - armBob, 2, 2, COL.glenn1);
-    drawPixelBlock(bx + 3, by + 19, 3, 4, COL.glenn3);
-    drawPixelBlock(bx + 8, by + 19, 3, 4, COL.glenn3);
-    drawPixelBlock(bx + 12, by + 14, 3, 2, COL.glenn2);
-  } else if (action === 'thinking') {
-    drawPixelBlock(bx + 11, by + 8, 3, 5, COL.glenn1);
-    drawPixelBlock(bx + 3, by + 19, 3, 4, COL.glenn3);
-    drawPixelBlock(bx + 8, by + 19, 3, 4, COL.glenn3);
-    drawPixelBlock(bx + 12, by + 14, 3, 2, COL.glenn2);
-  } else {
-    drawPixelBlock(bx + 3, by + 19, 3, 4, COL.glenn3);
-    drawPixelBlock(bx + 8, by + 19, 3, 4, COL.glenn3);
-    drawPixelBlock(bx + 12, by + 14, 3, 2, COL.glenn2);
-  }
-  ctx.restore();
-}
-
-function drawSprite(x, y, type) {
-  if (type === 'penny') {
-    // Ghost silhouette - peacock-ish shape
-    drawPixelBlock(x + 3, y + 2, 8, 8, '#4a4a6a');
-    drawPixelBlock(x + 4, y + 10, 6, 6, '#3a3a5a');
-    drawPixelBlock(x + 5, y + 16, 4, 4, '#2a2a4a');
-    // Crest feathers
-    drawPixelBlock(x + 5, y, 2, 3, '#3a5a6a');
-    drawPixelBlock(x + 7, y - 1, 2, 3, '#3a5a6a');
-    drawPixelBlock(x + 9, y, 2, 3, '#3a5a6a');
-  }
-}
-
-// ============================================================
-// STATUS ICONS
-// ============================================================
-function drawStatusIcon(x, y, status, t) {
-  const bob = Math.sin(t * 3) * 2;
-  if (status === 'working') {
-    // Lightning bolt ⚡
-    ctx.fillStyle = '#ffdd00';
-    drawPixelBlock(x + 4, y - 10 + bob, 3, 2, '#ffdd00');
-    drawPixelBlock(x + 3, y - 8 + bob, 3, 2, '#ffdd00');
-    drawPixelBlock(x + 2, y - 6 + bob, 5, 1, '#ffdd00');
-    drawPixelBlock(x + 4, y - 5 + bob, 3, 2, '#ffdd00');
-    drawPixelBlock(x + 5, y - 3 + bob, 2, 2, '#ffdd00');
-  } else if (status === 'thinking') {
-    // Thought bubble 💭
-    drawPixelBlock(x + 8, y - 6 + bob, 8, 6, 'rgba(255,255,255,0.8)');
-    drawPixelBlock(x + 9, y - 7 + bob, 6, 8, 'rgba(255,255,255,0.8)');
-    drawPixelBlock(x + 6, y - 2 + bob, 2, 2, 'rgba(255,255,255,0.6)');
-    drawPixelBlock(x + 4, y + bob, 1, 1, 'rgba(255,255,255,0.4)');
-    drawText('...', x + 9, y - 5 + bob, '#666', 1);
-  } else if (status === 'chatting') {
-    // Speech bubble 💬
-    drawPixelBlock(x + 6, y - 10 + bob, 14, 8, '#ffffff');
-    drawPixelBlock(x + 7, y - 11 + bob, 12, 10, '#ffffff');
-    drawPixelBlock(x + 5, y - 2 + bob, 3, 3, '#ffffff');
-    drawText('HI!', x + 8, y - 9 + bob, '#333', 1);
-  } else if (status === 'sleeping') {
-    // ZZZ floating up
-    const z1 = Math.sin(t * 2) * 1;
-    const z2 = Math.sin(t * 2 + 1) * 1;
-    const z3 = Math.sin(t * 2 + 2) * 1;
-    drawText('Z', x + 10, y - 4 + z1, 'rgba(150,150,255,0.9)', 1);
-    drawText('Z', x + 14, y - 10 + z2, 'rgba(150,150,255,0.6)', 1);
-    drawText('Z', x + 18, y - 16 + z3, 'rgba(150,150,255,0.3)', 1);
-  } else if (status === 'alert') {
-    // Bouncing exclamation ❗
-    const bounce = Math.abs(Math.sin(t * 5)) * 4;
-    drawPixelBlock(x + 5, y - 12 - bounce, 4, 6, '#ff3333');
-    drawPixelBlock(x + 6, y - 12 - bounce, 2, 4, '#ff5555');
-    drawPixelBlock(x + 6, y - 4 - bounce, 2, 2, '#ff3333');
-  }
-}
-
-// ============================================================
-// PARTICLE SYSTEM (dust motes)
-// ============================================================
-const particles = [];
-for (let i = 0; i < 20; i++) {
-  particles.push({
-    x: Math.random() * VW, y: Math.random() * VH,
-    vx: (Math.random() - 0.5) * 0.2, vy: -Math.random() * 0.1 - 0.05,
-    life: Math.random(), size: Math.random() * 1.5 + 0.5
-  });
-}
-
-function updateParticles(dt) {
-  particles.forEach(p => {
-    p.x += p.vx; p.y += p.vy; p.life -= 0.001;
-    if (p.life <= 0 || p.y < 0 || p.x < 0 || p.x > VW) {
-      p.x = Math.random() * VW; p.y = ROOM.floorY + Math.random() * (VH - ROOM.floorY);
-      p.life = 1; p.vy = -Math.random() * 0.1 - 0.05;
-    }
-  });
-}
-
-function drawParticles() {
-  particles.forEach(p => {
-    ctx.fillStyle = `rgba(255,255,200,${p.life * 0.15})`;
-    ctx.fillRect(p.x * SCALE, p.y * SCALE, p.size * SCALE, p.size * SCALE);
-  });
-}
-
-// ============================================================
-// AGENT AI / MOVEMENT
-// ============================================================
-class Agent {
-  constructor(id, drawFn, stationPoi) {
-    this.id = id;
-    this.drawFn = drawFn;
-    this.stationPoi = stationPoi;
-    const poi = ROOM.poi[stationPoi];
-    this.x = poi.x; this.y = poi.y;
-    this.targetX = poi.x; this.targetY = poi.y;
-    this.dir = 1;
-    this.frame = 0;
-    this.action = 'idle';
-    this.moveTimer = 0;
-    this.actionTimer = Math.random() * 200 + 100;
-    this.speed = 0.5;
-    this.atTarget = true;
-  }
-
-  getData() { return agentData.agents.find(a => a.id === this.id); }
-
-  onStatusChange() {
-    const d = this.getData();
-    if (!d) return;
-    this.actionTimer = 0; // trigger re-evaluation
-  }
-
-  pickDestination() {
-    const d = this.getData();
-    if (!d) return;
-    const status = d.status;
-    const poi = ROOM.poi;
-    if (status === 'working' || status === 'typing' || status === 'chatting' || status === 'alert') {
-      // Mostly at station, occasionally coffee
-      if (Math.random() < 0.2) {
-        this.goTo(poi.coffeeMachine);
-      } else {
-        this.goTo(poi[this.stationPoi]);
-      }
-    } else if (status === 'thinking') {
-      const choices = [poi[this.stationPoi], poi.windowView, poi[this.stationPoi]];
-      this.goTo(choices[Math.random() * choices.length | 0]);
-    } else if (status === 'idle') {
-      const all = [poi.couch, poi.coffeeMachine, poi.windowView, poi.center, poi[this.stationPoi]];
-      this.goTo(all[Math.random() * all.length | 0]);
-    } else if (status === 'sleeping') {
-      this.goTo(poi.couch);
-    }
-    this.actionTimer = 150 + Math.random() * 300;
-  }
-
-  goTo(poi) {
-    this.targetX = poi.x + (Math.random() - 0.5) * 10;
-    this.targetY = poi.y + (Math.random() - 0.5) * 5;
-    // Clamp Y
-    this.targetY = Math.max(ROOM.floorY + 5, Math.min(VH - 30, this.targetY));
-    this.targetX = Math.max(20, Math.min(VW - 20, this.targetX));
-    this.atTarget = false;
-  }
-
-  update(dt) {
-    const d = this.getData();
-    if (!d) return;
-    this.frame += 0.1;
-    this.actionTimer -= 1;
-
-    if (this.actionTimer <= 0) {
-      this.pickDestination();
-    }
-
-    const dx = this.targetX - this.x;
-    const dy = this.targetY - this.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-
-    if (dist > 2) {
-      this.x += (dx / dist) * this.speed;
-      this.y += (dy / dist) * this.speed;
-      this.dir = dx > 0 ? 1 : -1;
-      this.action = 'walking';
-      this.atTarget = false;
-    } else {
-      this.atTarget = true;
-      // Determine action from status
-      const status = d.status;
-      const atStation = Math.abs(this.x - ROOM.poi[this.stationPoi].x) < 20;
-      if (status === 'working' || status === 'alert') this.action = atStation ? 'typing' : 'idle';
-      else if (status === 'thinking') this.action = 'thinking';
-      else if (status === 'chatting') this.action = atStation ? 'typing' : 'idle';
-      else if (status === 'sleeping') this.action = 'sleeping';
-      else this.action = 'idle';
-    }
-  }
-
-  draw(t) {
-    this.drawFn(this.x, this.y - 24, this.frame, this.action, this.dir);
-    // Name tag
-    const d = this.getData();
-    if (!d) return;
-    const name = d.name.toUpperCase();
-    const nw = textWidth(name, 1);
-    drawText(name, this.x + 7 - nw / 2, this.y - 30, COL.accent, 1);
-    // Status icon
-    drawStatusIcon(this.x, this.y - 24, d.status, t);
-  }
-
-  containsPoint(px, py) {
-    return px >= this.x - 5 && px <= this.x + 20 && py >= this.y - 30 && py <= this.y + 5;
-  }
-}
-
-const agents = [
-  new Agent('cloe', drawCloe, 'cloeStation'),
-  new Agent('glenn-gary', drawGlenn, 'glennStation'),
-];
-
-// ============================================================
-// CLICK / STATUS CARD
-// ============================================================
-const statusCard = document.getElementById('statusCard');
-canvas.addEventListener('click', (e) => {
-  const rect = canvas.getBoundingClientRect();
-  const mx = (e.clientX - rect.left) / SCALE;
-  const my = (e.clientY - rect.top) / SCALE;
-
-  let found = false;
-  agents.forEach(agent => {
-    if (agent.containsPoint(mx, my)) {
-      const d = agent.getData();
-      if (d) {
-        document.getElementById('sc-name').textContent = d.name;
-        document.getElementById('sc-role').textContent = d.role;
-        document.getElementById('sc-task').textContent = '📋 ' + d.task;
-        document.getElementById('sc-stat').textContent = 'Status: ' + d.status + ' | Uptime: ' + d.uptime;
-        statusCard.style.display = 'block';
-        statusCard.style.left = e.clientX + 10 + 'px';
-        statusCard.style.top = e.clientY - 60 + 'px';
-        found = true;
-        setTimeout(() => { statusCard.style.display = 'none'; }, 3000);
-      }
-    }
-  });
-  if (!found) statusCard.style.display = 'none';
-});
-
-// ============================================================
-// SOUND (simple chiptune oscillator)
-// ============================================================
-let audioCtx = null, soundOn = false;
-function toggleSound() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  soundOn = !soundOn;
-  document.getElementById('soundToggle').textContent = soundOn ? '🔊 Sound' : '🔇 Sound';
-  if (soundOn) startAmbient();
-  else stopAmbient();
-}
-
-let ambientNodes = [];
-let chiptuneInterval = null;
-
-function startAmbient() {
-  if (!audioCtx) return;
-
-  // Master volume
-  const master = audioCtx.createGain();
-  master.gain.value = 0.12;
-  master.connect(audioCtx.destination);
-  ambientNodes.push(master);
-
-  // Soft pad (background warmth)
-  const padNotes = [130.81, 196.00, 261.63]; // C3, G3, C4
-  padNotes.forEach((freq, i) => {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.value = freq;
-    gain.gain.value = 0.04;
-    const lfo = audioCtx.createOscillator();
-    const lfoGain = audioCtx.createGain();
-    lfo.frequency.value = 0.15 + i * 0.05;
-    lfoGain.gain.value = 0.01;
-    lfo.connect(lfoGain);
-    lfoGain.connect(gain.gain);
-    lfo.start();
-    osc.connect(gain);
-    gain.connect(master);
-    osc.start();
-    ambientNodes.push(osc, lfo, gain);
-  });
-
-  // Chiptune melody sequencer
-  const bpm = 85;
-  const stepTime = 60 / bpm / 2; // 8th notes
-
-  // Lo-fi chiptune melody — chill night vibes
-  // Notes as frequencies (C4=261.63, D4=293.66, E4=329.63, G4=392.00, A4=440, B4=493.88, C5=523.25)
-  const melody = [
-    523.25, 0, 440, 0, 392, 0, 329.63, 0,
-    392, 0, 440, 329.63, 0, 0, 261.63, 0,
-    329.63, 0, 392, 0, 440, 0, 523.25, 0,
-    440, 392, 0, 329.63, 0, 0, 261.63, 0,
-    392, 0, 523.25, 0, 440, 0, 329.63, 0,
-    261.63, 0, 329.63, 392, 0, 0, 440, 0,
-    523.25, 0, 659.25, 0, 523.25, 0, 440, 0,
-    392, 329.63, 0, 0, 261.63, 0, 0, 0
-  ];
-
-  // Bass line
-  const bass = [
-    130.81, 0, 0, 130.81, 0, 0, 130.81, 0,
-    164.81, 0, 0, 164.81, 0, 0, 164.81, 0,
-    174.61, 0, 0, 174.61, 0, 0, 174.61, 0,
-    196.00, 0, 0, 196.00, 0, 0, 196.00, 0,
-    130.81, 0, 0, 130.81, 0, 0, 130.81, 0,
-    164.81, 0, 0, 164.81, 0, 0, 164.81, 0,
-    174.61, 0, 0, 174.61, 0, 0, 174.61, 0,
-    196.00, 0, 0, 196.00, 0, 0, 196.00, 0
-  ];
-
-  // Arpeggio pattern (plays every 3rd step)
-  const arp = [261.63, 329.63, 392, 523.25, 392, 329.63];
-  let arpIdx = 0;
-
-  let step = 0;
-
-  function playNote(freq, type, vol, duration, dest) {
-    if (freq === 0) return;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-    osc.connect(gain);
-    gain.connect(dest);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
-  }
-
-  function tick() {
-    if (!soundOn) return;
-    const idx = step % melody.length;
-
-    // Melody — square wave, classic chiptune
-    playNote(melody[idx], 'square', 0.08, stepTime * 1.5, master);
-
-    // Bass — triangle wave
-    playNote(bass[idx], 'triangle', 0.1, stepTime * 1.8, master);
-
-    // Arpeggio — every 3 steps, soft square
-    if (step % 3 === 0) {
-      playNote(arp[arpIdx % arp.length] * 2, 'square', 0.03, stepTime * 0.6, master);
-      arpIdx++;
-    }
-
-    // Hi-hat style noise on every other step
-    if (step % 2 === 0) {
-      const bufferSize = audioCtx.sampleRate * 0.05;
-      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.3;
-      const noise = audioCtx.createBufferSource();
-      noise.buffer = buffer;
-      const noiseGain = audioCtx.createGain();
-      noiseGain.gain.setValueAtTime(0.02, audioCtx.currentTime);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-      // High-pass filter for hat sound
-      const hpf = audioCtx.createBiquadFilter();
-      hpf.type = 'highpass';
-      hpf.frequency.value = 8000;
-      noise.connect(hpf);
-      hpf.connect(noiseGain);
-      noiseGain.connect(master);
-      noise.start();
-      noise.stop(audioCtx.currentTime + 0.05);
-    }
-
-    // Kick on every 4th step
-    if (step % 4 === 0) {
-      const kick = audioCtx.createOscillator();
-      const kickGain = audioCtx.createGain();
-      kick.type = 'sine';
-      kick.frequency.setValueAtTime(150, audioCtx.currentTime);
-      kick.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.12);
-      kickGain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-      kickGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
-      kick.connect(kickGain);
-      kickGain.connect(master);
-      kick.start();
-      kick.stop(audioCtx.currentTime + 0.15);
-    }
-
-    step++;
-  }
-
-  chiptuneInterval = setInterval(tick, stepTime * 1000);
-}
-
-function stopAmbient() {
-  if (chiptuneInterval) { clearInterval(chiptuneInterval); chiptuneInterval = null; }
-  ambientNodes.forEach(n => { try { n.stop?.(); n.disconnect(); } catch(e){} });
-  ambientNodes = [];
-}
-
-// ============================================================
-// AMBIENT LIGHTING (wall glow from screen)
-// ============================================================
-function drawAmbientLighting(t) {
-  // Glow from wall screen
-  const s = ROOM.wallScreen;
-  const grad = ctx.createRadialGradient(
-    (s.x + s.w/2) * SCALE, (s.y + s.h/2) * SCALE, 10 * SCALE,
-    (s.x + s.w/2) * SCALE, (s.y + s.h/2) * SCALE, 100 * SCALE
-  );
-  grad.addColorStop(0, 'rgba(0,80,160,0.06)');
-  grad.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, VW * SCALE, VH * SCALE);
-
-  // Window moonlight
-  const w = ROOM.window;
-  const grad2 = ctx.createRadialGradient(
-    (w.x + w.w/2) * SCALE, (w.y + w.h/2) * SCALE, 5 * SCALE,
-    (w.x + w.w/2) * SCALE, (w.y + w.h) * SCALE, 80 * SCALE
-  );
-  grad2.addColorStop(0, 'rgba(200,200,255,0.04)');
-  grad2.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = grad2;
-  ctx.fillRect(0, 0, VW * SCALE, VH * SCALE);
-}
-
-// ============================================================
-// MAIN LOOP
-// ============================================================
-let time = 0;
-function gameLoop() {
-  time += 1/60;
-
-  // Clear
-  ctx.fillStyle = COL.bg1;
-  ctx.fillRect(0, 0, W, H);
-
-  // Draw scene (back to front)
-  drawWalls();
-  drawWindow(time);
-  drawWallScreen(time);
-
-  // Furniture (back row)
-  drawDesk(ROOM.cloeDesk, 2, '#002200');
-  drawDesk(ROOM.glennDesk, 3, '#002200');
-  drawTradingTerminal(time);
-  drawPennyStation();
-
-  drawFloor();
-
-  // Furniture (front)
-  drawCouch();
-  drawCoffeeMachine(time);
-
-  // Ambient
-  drawAmbientLighting(time);
-
-  // Update & draw agents (sort by Y for depth)
-  agents.forEach(a => a.update(1/60));
-  const sorted = [...agents].sort((a, b) => a.y - b.y);
-  sorted.forEach(a => a.draw(time));
-
-  // Particles
-  updateParticles(1/60);
-  drawParticles();
-
-  // Vignette
-  const grad = ctx.createRadialGradient(W/2, H/2, W * 0.3, W/2, H/2, W * 0.7);
-  grad.addColorStop(0, 'rgba(0,0,0,0)');
-  grad.addColorStop(1, 'rgba(0,0,0,0.4)');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, H);
-
-  requestAnimationFrame(gameLoop);
-}
-
-gameLoop();
 </script>
 </body>
 </html>
