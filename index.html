@@ -3,43 +3,94 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>THE CONTINENTAL</title>
+<title>THE CONTINENTAL — Agent Operations</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0a; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0a; font-family: monospace; }
 canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; cursor: crosshair; }
-#ui { position: fixed; top: 10px; right: 10px; z-index: 10; font-family: monospace; }
-#controlPanel { background: rgba(20,12,8,0.93); border: 2px solid #C9A84C; padding: 10px; border-radius: 4px; color: #d4c4a0; font-size: 12px; min-width: 180px; }
-#controlPanel h3 { color: #C9A84C; margin-bottom: 8px; font-size: 13px; }
-.ctrl-row { margin: 4px 0; display: flex; justify-content: space-between; align-items: center; }
+#ui { position: fixed; top: 10px; right: 10px; z-index: 10; }
+#controlPanel { background: rgba(20,12,8,0.95); border: 2px solid #C9A84C; padding: 12px; border-radius: 4px; color: #d4c4a0; font-size: 12px; min-width: 200px; backdrop-filter: blur(4px); }
+#controlPanel h3 { color: #C9A84C; margin-bottom: 10px; font-size: 13px; text-align: center; letter-spacing: 2px; border-bottom: 1px solid rgba(201,168,76,0.3); padding-bottom: 6px; }
+.ctrl-row { margin: 5px 0; display: flex; justify-content: space-between; align-items: center; }
 .ctrl-row label { font-size: 11px; }
-.ctrl-row select { background: #1a0f08; color: #d4c4a0; border: 1px solid #6b5530; font-size: 11px; font-family: monospace; padding: 2px; }
+.ctrl-row select { background: #1a0f08; color: #d4c4a0; border: 1px solid #6b5530; font-size: 11px; font-family: monospace; padding: 2px 4px; border-radius: 2px; }
+#statusPanel { position: fixed; top: 10px; left: 10px; z-index: 10; background: rgba(20,12,8,0.95); border: 2px solid #C9A84C; padding: 12px; border-radius: 4px; color: #d4c4a0; font-size: 11px; min-width: 220px; backdrop-filter: blur(4px); max-width: 280px; }
+#statusPanel h3 { color: #C9A84C; margin-bottom: 8px; font-size: 12px; text-align: center; letter-spacing: 3px; border-bottom: 1px solid rgba(201,168,76,0.3); padding-bottom: 6px; }
+.agent-status { margin: 8px 0; padding: 6px; border-left: 2px solid #333; transition: border-color 0.3s; }
+.agent-status.active { border-left-color: #00ff41; }
+.agent-status.thinking { border-left-color: #C9A84C; }
+.agent-status.offline { border-left-color: #333; opacity: 0.5; }
+.agent-status .name { font-weight: bold; color: #C9A84C; font-size: 12px; }
+.agent-status .role { color: #8b7340; font-size: 10px; margin: 2px 0; }
+.agent-status .task { color: #00ff41; font-size: 10px; }
+.agent-status .task.planned { color: #555; font-style: italic; }
 #statusCard { display: none; position: fixed; background: rgba(20,12,8,0.96); border: 2px solid #C9A84C; padding: 12px; border-radius: 4px; color: #d4c4a0; font-family: monospace; font-size: 12px; z-index: 20; min-width: 200px; pointer-events: none; }
 #statusCard h4 { color: #C9A84C; margin-bottom: 6px; }
 #statusCard .role { color: #8b7340; font-size: 11px; }
 #statusCard .task { color: #00ff41; margin-top: 4px; }
 #statusCard .stat { color: #998870; font-size: 10px; margin-top: 4px; }
-#soundToggle { position: fixed; bottom: 30px; right: 10px; z-index: 10; background: rgba(20,12,8,0.9); border: 1px solid #6b5530; color: #d4c4a0; font-family: monospace; font-size: 11px; padding: 4px 8px; cursor: pointer; border-radius: 3px; }
-#ticker { position: fixed; bottom: 0; left: 0; right: 0; height: 22px; background: rgba(10,6,4,0.95); border-top: 1px solid #C9A84C; z-index: 10; overflow: hidden; font-family: monospace; font-size: 11px; line-height: 22px; color: #C9A84C; white-space: nowrap; }
-#tickerText { display: inline-block; animation: scroll 40s linear infinite; }
+#soundToggle { position: fixed; bottom: 30px; right: 10px; z-index: 10; background: rgba(20,12,8,0.9); border: 1px solid #6b5530; color: #d4c4a0; font-family: monospace; font-size: 11px; padding: 6px 10px; cursor: pointer; border-radius: 3px; transition: border-color 0.3s; }
+#soundToggle:hover { border-color: #C9A84C; }
+#ticker { position: fixed; bottom: 0; left: 0; right: 0; height: 24px; background: rgba(10,6,4,0.95); border-top: 1px solid #C9A84C; z-index: 10; overflow: hidden; font-family: monospace; font-size: 11px; line-height: 24px; color: #C9A84C; white-space: nowrap; }
+#tickerText { display: inline-block; animation: scroll 45s linear infinite; }
 @keyframes scroll { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
+@media (max-width: 768px) {
+  #statusPanel { display: none; }
+  #controlPanel { min-width: 160px; font-size: 10px; padding: 8px; }
+  #controlPanel h3 { font-size: 11px; }
+  .ctrl-row label { font-size: 10px; }
+  .ctrl-row select { font-size: 10px; }
+  #soundToggle { bottom: 28px; font-size: 10px; padding: 4px 8px; }
+}
+@media (max-width: 480px) {
+  #ui { top: 5px; right: 5px; }
+  #controlPanel { min-width: 140px; padding: 6px; }
+}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
+
+<div id="statusPanel">
+  <h3>◆ OPERATIONS ◆</h3>
+  <div class="agent-status active" id="sp-cloe">
+    <div class="name">🦊 Cloe</div>
+    <div class="role">Strategy & Apps</div>
+    <div class="task">⚡ Bang Brush content plan</div>
+  </div>
+  <div class="agent-status thinking" id="sp-glenn">
+    <div class="name">🐺 Glenn Gary</div>
+    <div class="role">Trading & Analysis</div>
+    <div class="task">💭 Polymarket category analysis</div>
+  </div>
+  <div class="agent-status active" id="sp-mallory">
+    <div class="name">✨ Mallory</div>
+    <div class="role">AI Influencer</div>
+    <div class="task">📸 Content creation</div>
+  </div>
+  <div class="agent-status offline" id="sp-scout">
+    <div class="name">📡 Scout</div>
+    <div class="role">Intel Scanner</div>
+    <div class="task planned">🔧 Deployment planned</div>
+  </div>
+</div>
+
 <div id="ui">
 <div id="controlPanel">
-<h3>⚙ CONTROL PANEL</h3>
+<h3>◆ CONTROL ◆</h3>
 <div class="ctrl-row"><label>Cloe:</label><select id="ctrl-cloe"><option value="working">Working ⚡</option><option value="thinking">Thinking 💭</option><option value="chatting">Chatting 💬</option><option value="idle">Idle</option><option value="sleeping">Sleeping 💤</option><option value="alert">Alert ❗</option></select></div>
 <div class="ctrl-row"><label>Glenn:</label><select id="ctrl-glenn-gary"><option value="thinking">Thinking 💭</option><option value="working">Working ⚡</option><option value="chatting">Chatting 💬</option><option value="idle">Idle</option><option value="sleeping">Sleeping 💤</option><option value="alert">Alert ❗</option></select></div>
+<div class="ctrl-row"><label>Mallory:</label><select id="ctrl-mallory"><option value="working">Working ⚡</option><option value="thinking">Thinking 💭</option><option value="chatting">Chatting 💬</option><option value="idle">Idle</option><option value="sleeping">Sleeping 💤</option><option value="alert">Alert ❗</option></select></div>
 </div>
 </div>
+
 <div id="statusCard"><h4 id="sc-name"></h4><div class="role" id="sc-role"></div><div class="task" id="sc-task"></div><div class="stat" id="sc-stat"></div></div>
 <button id="soundToggle" onclick="toggleSound()">🔇 Sound</button>
-<div id="ticker"><span id="tickerText">◆ CLOE deployed 3 sites to GitHub Pages ◆ GLENN completed Day 5 analysis ◆ PORTFOLIO: $90.60 ◆ SITES LIVE: 4 ◆ BANG BRUSH site launched ◆ REPURPOSE AI prototype ready ◆ POLYMARKET research ongoing ◆ PENNY deployment pending ◆ THE CONTINENTAL — all agents operational ◆</span></div>
+<div id="ticker"><span id="tickerText">◆ THE CONTINENTAL — All agents operational ◆ CLOE deployed 3 sites to GitHub Pages ◆ GLENN completed Day 5 analysis ◆ MALLORY onboarded — content pipeline active ◆ SCOUT deployment in planning ◆ PORTFOLIO: $90.60 ◆ SITES LIVE: 4 ◆ BANG BRUSH site launched ◆ REPURPOSE AI prototype ready ◆ POLYMARKET research ongoing ◆</span></div>
+
 <script>
 // ============================================================
-// THE CONTINENTAL — 8-bit Agent Activity Dashboard
+// THE CONTINENTAL — Agent Activity Dashboard v3
 // ============================================================
 
 const canvas = document.getElementById('c');
@@ -66,14 +117,27 @@ window.addEventListener('resize', resize);
 // ============================================================
 const agentData = {
   agents: [
-    { id: "cloe", name: "Cloe", role: "Strategy & Coordination", status: "working", task: "Bang Brush content plan", uptime: "4h 23m" },
-    { id: "glenn-gary", name: "Glenn Gary", role: "Trading & Analysis", status: "thinking", task: "Polymarket category analysis", uptime: "2h 17m" },
-    { id: "penny", name: "Penny", role: "Content & Influence", status: "sleeping", task: "Not yet deployed", uptime: "—" }
+    { id: "cloe", name: "Cloe", role: "Strategy & Apps", status: "working", task: "Bang Brush content plan", uptime: "4h 23m", emoji: "🦊" },
+    { id: "glenn-gary", name: "Glenn Gary", role: "Trading & Analysis", status: "thinking", task: "Polymarket category analysis", uptime: "2h 17m", emoji: "🐺" },
+    { id: "mallory", name: "Mallory", role: "AI Influencer", status: "working", task: "Content creation", uptime: "0h 45m", emoji: "✨" },
+    { id: "scout", name: "Scout", role: "Intel Scanner", status: "sleeping", task: "Deployment planned", uptime: "—", emoji: "📡" }
   ]
 };
 
-document.getElementById('ctrl-cloe').addEventListener('change', e => { agentData.agents[0].status = e.target.value; agents[0].onStatusChange(); });
-document.getElementById('ctrl-glenn-gary').addEventListener('change', e => { agentData.agents[1].status = e.target.value; agents[1].onStatusChange(); });
+document.getElementById('ctrl-cloe').addEventListener('change', e => { agentData.agents[0].status = e.target.value; agents[0].onStatusChange(); updateStatusPanel(); });
+document.getElementById('ctrl-glenn-gary').addEventListener('change', e => { agentData.agents[1].status = e.target.value; agents[1].onStatusChange(); updateStatusPanel(); });
+document.getElementById('ctrl-mallory').addEventListener('change', e => { agentData.agents[2].status = e.target.value; agents[2].onStatusChange(); updateStatusPanel(); });
+
+function updateStatusPanel() {
+  const icons = { working: '⚡', thinking: '💭', chatting: '💬', idle: '😴', sleeping: '💤', alert: '❗' };
+  const classes = { working: 'active', thinking: 'thinking', chatting: 'active', idle: 'offline', sleeping: 'offline', alert: 'active' };
+  agentData.agents.forEach(a => {
+    const el = document.getElementById('sp-' + a.id);
+    if (!el) return;
+    el.className = 'agent-status ' + (classes[a.status] || 'offline');
+    el.querySelector('.task').textContent = (icons[a.status] || '') + ' ' + a.task;
+  });
+}
 
 // ============================================================
 // PIXEL FONT
@@ -94,7 +158,8 @@ const fontDef = {
   '/':'001001010100100','!':'010010010000010','?':'111001010000010','&':'010101010101011',
   '\'':'010010000000000','$':'111110111011111','(':'010100100100010',')':'010001001001010',
   ',':'000000000010100','#':'000111000111000','+':'000010111010000','<':'001010100010001',
-  '>':'100010001010100','=':'000111000111000','%':'101001010100101','@':'111101111100111'
+  '>':'100010001010100','=':'000111000111000','%':'101001010100101','@':'111101111100111',
+  '*':'000101010101000','~':'000011101100000'
 };
 Object.keys(fontDef).forEach(ch => {
   const s = fontDef[ch]; const w = 3, h = 5, d = [];
@@ -122,19 +187,21 @@ function drawText(text, x, y, color, scale) {
 function textWidth(text, scale) { return text.length * 4 * (scale||1) - (scale||1); }
 
 // ============================================================
-// COLORS — John Wick Continental palette
+// COLORS
 // ============================================================
 const COL = {
   bg1: '#0a0a0a', bg2: '#1a0f08', accent: '#C9A84C', gold: '#C9A84C', goldDim: '#8b7340',
-  darkWood: '#2C1810', burgundy: '#4a1520', teal: '#2C1810',
+  darkWood: '#2C1810', burgundy: '#4a1520',
   cloe1: '#d4a574', cloe2: '#c6883e', cloe3: '#a06828', cloeTail: '#e8bc7a',
   glenn1: '#4a6fa5', glenn2: '#2d3a4a', glenn3: '#1f2833', glennEye: '#00ff41',
+  mallory1: '#8B6952', mallory2: '#6B4F3D', mallory3: '#5A3E2E', malloryHair: '#2A1A10', malloryCopperHL: '#B87333', malloryTop: '#1a1a2e', malloryAccent: '#C9A84C',
   white: '#d4c4a0', floor1: '#0e0806', floor2: '#140e0a',
   desk: '#2C1810', monitor: '#0a1a0a', monitorGlow: '#00ff41',
   couch1: '#4a1520', couch2: '#6a2535',
   coffee: '#3a2a1a', window1: '#0a0a1a', star: '#ffffff',
   skyline: '#0d1525', building1: '#141e30', building2: '#1a2840',
   wallTrim: '#3a2815',
+  plant1: '#1a4a1a', plant2: '#2a6a2a', plant3: '#3a8a3a', pot: '#6a3a1a',
 };
 
 // ============================================================
@@ -142,20 +209,25 @@ const COL = {
 // ============================================================
 const ROOM = {
   floorY: 200,
-  wallScreen: { x: 180, y: 40, w: 120, h: 60 },
-  cloeDesk: { x: 60, y: 170, w: 50, h: 25 },
-  glennDesk: { x: 320, y: 170, w: 55, h: 25 },
-  pennyDesk: { x: 380, y: 120, w: 40, h: 20 },
-  couch: { x: 200, y: 240, w: 70, h: 25 },
+  wallScreen: { x: 170, y: 35, w: 140, h: 70 },
+  cloeDesk: { x: 50, y: 170, w: 50, h: 25 },
+  glennDesk: { x: 310, y: 170, w: 55, h: 25 },
+  malloryDesk: { x: 180, y: 175, w: 48, h: 22 },
+  scoutStation: { x: 400, y: 110, w: 40, h: 30 },
+  couch: { x: 200, y: 245, w: 70, h: 25 },
   coffee: { x: 440, y: 235, w: 20, h: 30 },
-  window: { x: 10, y: 30, w: 80, h: 70 },
-  clock: { x: 130, y: 40, w: 30, h: 30 },
+  window: { x: 8, y: 25, w: 80, h: 75 },
+  clock: { x: 120, y: 35, w: 30, h: 30 },
+  plant1: { x: 100, y: 178, w: 10, h: 20 },
+  plant2: { x: 375, y: 180, w: 8, h: 18 },
+  plant3: { x: 460, y: 175, w: 10, h: 22 },
   poi: {
-    cloeStation: { x: 80, y: 210 },
-    glennStation: { x: 340, y: 210 },
+    cloeStation: { x: 70, y: 210 },
+    glennStation: { x: 330, y: 210 },
+    malloryStation: { x: 200, y: 215 },
     couch: { x: 235, y: 258 },
     coffeeMachine: { x: 448, y: 260 },
-    windowView: { x: 50, y: 210 },
+    windowView: { x: 48, y: 210 },
     center: { x: 240, y: 240 },
   }
 };
@@ -171,15 +243,19 @@ function drawFloor() {
       ctx.fillRect(x * SCALE, y * SCALE, 16 * SCALE, 16 * SCALE);
     }
   }
-  // Subtle wood grain lines
-  ctx.fillStyle = 'rgba(201,168,76,0.03)';
+  // Subtle marble veining
+  ctx.fillStyle = 'rgba(201,168,76,0.02)';
   for (let y = ROOM.floorY; y < VH; y += 8) {
     ctx.fillRect(0, y * SCALE, VW * SCALE, SCALE);
+  }
+  // Floor reflection streaks
+  ctx.fillStyle = 'rgba(201,168,76,0.015)';
+  for (let x = 20; x < VW; x += 60) {
+    ctx.fillRect(x * SCALE, ROOM.floorY * SCALE, 2 * SCALE, (VH - ROOM.floorY) * SCALE);
   }
 }
 
 function drawWalls() {
-  // Back wall — dark wood paneling
   const grad = ctx.createLinearGradient(0, 0, 0, ROOM.floorY * SCALE);
   grad.addColorStop(0, '#120a06');
   grad.addColorStop(1, '#1a0f08');
@@ -192,7 +268,7 @@ function drawWalls() {
     ctx.fillStyle = 'rgba(201,168,76,0.06)';
     ctx.fillRect(x * SCALE, 8 * SCALE, SCALE, (ROOM.floorY - 10) * SCALE);
   }
-  // Wall bottom trim — gold accent
+  // Wall bottom trim
   ctx.fillStyle = COL.darkWood;
   ctx.fillRect(0, (ROOM.floorY - 6) * SCALE, VW * SCALE, 6 * SCALE);
   ctx.fillStyle = '#C9A84C';
@@ -208,106 +284,100 @@ function drawWalls() {
 function drawWallClock(t) {
   const c = ROOM.clock;
   const cx = c.x + c.w / 2, cy = c.y + c.h / 2;
-  // Clock face — dark with gold rim
   ctx.fillStyle = '#C9A84C';
-  ctx.beginPath();
-  ctx.arc(cx * SCALE, cy * SCALE, (c.w/2 + 2) * SCALE, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.beginPath(); ctx.arc(cx * SCALE, cy * SCALE, (c.w/2 + 2) * SCALE, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = '#0a0604';
-  ctx.beginPath();
-  ctx.arc(cx * SCALE, cy * SCALE, (c.w/2) * SCALE, 0, Math.PI * 2);
-  ctx.fill();
-  // Hour markers
+  ctx.beginPath(); ctx.arc(cx * SCALE, cy * SCALE, (c.w/2) * SCALE, 0, Math.PI * 2); ctx.fill();
   for (let i = 0; i < 12; i++) {
     const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
     const r = c.w / 2 - 3;
     ctx.fillStyle = '#C9A84C';
     ctx.fillRect((cx + Math.cos(a) * r) * SCALE, (cy + Math.sin(a) * r) * SCALE, SCALE, SCALE);
   }
-  // Real-time hands
   const now = new Date();
   const hr = now.getHours() % 12 + now.getMinutes() / 60;
   const mn = now.getMinutes() + now.getSeconds() / 60;
   const sc = now.getSeconds();
-  // Hour hand
-  const ha = (hr / 12) * Math.PI * 2 - Math.PI / 2;
-  const hLen = 7;
-  ctx.strokeStyle = '#C9A84C';
-  ctx.lineWidth = 2 * SCALE;
-  ctx.beginPath();
-  ctx.moveTo(cx * SCALE, cy * SCALE);
-  ctx.lineTo((cx + Math.cos(ha) * hLen) * SCALE, (cy + Math.sin(ha) * hLen) * SCALE);
-  ctx.stroke();
-  // Minute hand
-  const ma = (mn / 60) * Math.PI * 2 - Math.PI / 2;
-  const mLen = 10;
+  ctx.strokeStyle = '#C9A84C'; ctx.lineWidth = 2 * SCALE;
+  let ha = (hr / 12) * Math.PI * 2 - Math.PI / 2;
+  ctx.beginPath(); ctx.moveTo(cx * SCALE, cy * SCALE); ctx.lineTo((cx + Math.cos(ha) * 7) * SCALE, (cy + Math.sin(ha) * 7) * SCALE); ctx.stroke();
+  let ma = (mn / 60) * Math.PI * 2 - Math.PI / 2;
   ctx.lineWidth = 1.5 * SCALE;
-  ctx.beginPath();
-  ctx.moveTo(cx * SCALE, cy * SCALE);
-  ctx.lineTo((cx + Math.cos(ma) * mLen) * SCALE, (cy + Math.sin(ma) * mLen) * SCALE);
-  ctx.stroke();
-  // Second hand
-  const sa = (sc / 60) * Math.PI * 2 - Math.PI / 2;
-  ctx.strokeStyle = '#aa3333';
-  ctx.lineWidth = SCALE;
-  ctx.beginPath();
-  ctx.moveTo(cx * SCALE, cy * SCALE);
-  ctx.lineTo((cx + Math.cos(sa) * 11) * SCALE, (cy + Math.sin(sa) * 11) * SCALE);
-  ctx.stroke();
-  // Center dot
-  ctx.fillStyle = '#C9A84C';
-  ctx.beginPath();
-  ctx.arc(cx * SCALE, cy * SCALE, 1.5 * SCALE, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.beginPath(); ctx.moveTo(cx * SCALE, cy * SCALE); ctx.lineTo((cx + Math.cos(ma) * 10) * SCALE, (cy + Math.sin(ma) * 10) * SCALE); ctx.stroke();
+  let sa2 = (sc / 60) * Math.PI * 2 - Math.PI / 2;
+  ctx.strokeStyle = '#aa3333'; ctx.lineWidth = SCALE;
+  ctx.beginPath(); ctx.moveTo(cx * SCALE, cy * SCALE); ctx.lineTo((cx + Math.cos(sa2) * 11) * SCALE, (cy + Math.sin(sa2) * 11) * SCALE); ctx.stroke();
+  ctx.fillStyle = '#C9A84C'; ctx.beginPath(); ctx.arc(cx * SCALE, cy * SCALE, 1.5 * SCALE, 0, Math.PI * 2); ctx.fill();
+  // Pendulum
+  const pendAngle = Math.sin(t * 2) * 0.3;
+  const px = cx + Math.sin(pendAngle) * 8;
+  const py = cy + c.h/2 + 12 + Math.cos(pendAngle) * 2;
+  ctx.strokeStyle = 'rgba(201,168,76,0.4)'; ctx.lineWidth = SCALE;
+  ctx.beginPath(); ctx.moveTo(cx * SCALE, (cy + c.h/2) * SCALE); ctx.lineTo(px * SCALE, py * SCALE); ctx.stroke();
+  ctx.fillStyle = '#C9A84C'; ctx.beginPath(); ctx.arc(px * SCALE, py * SCALE, 2.5 * SCALE, 0, Math.PI * 2); ctx.fill();
 }
 
 function drawWindow(t) {
   const w = ROOM.window;
-  // Frame — dark wood with gold inlay
   ctx.fillStyle = COL.darkWood;
-  ctx.fillRect((w.x - 3) * SCALE, (w.y - 3) * SCALE, (w.w + 6) * SCALE, (w.h + 6) * SCALE);
+  ctx.fillRect((w.x - 4) * SCALE, (w.y - 4) * SCALE, (w.w + 8) * SCALE, (w.h + 8) * SCALE);
   ctx.fillStyle = 'rgba(201,168,76,0.4)';
-  ctx.fillRect((w.x - 3) * SCALE, (w.y - 3) * SCALE, (w.w + 6) * SCALE, SCALE);
-  ctx.fillRect((w.x - 3) * SCALE, (w.y + w.h + 2) * SCALE, (w.w + 6) * SCALE, SCALE);
+  ctx.fillRect((w.x - 4) * SCALE, (w.y - 4) * SCALE, (w.w + 8) * SCALE, SCALE);
+  ctx.fillRect((w.x - 4) * SCALE, (w.y + w.h + 3) * SCALE, (w.w + 8) * SCALE, SCALE);
+  // Curtains
+  ctx.fillStyle = '#3a1520';
+  ctx.fillRect((w.x - 8) * SCALE, (w.y - 6) * SCALE, 7 * SCALE, (w.h + 14) * SCALE);
+  ctx.fillRect((w.x + w.w + 1) * SCALE, (w.y - 6) * SCALE, 7 * SCALE, (w.h + 14) * SCALE);
+  // Curtain folds
+  for (let cy = w.y; cy < w.y + w.h; cy += 6) {
+    ctx.fillStyle = 'rgba(201,168,76,0.06)';
+    ctx.fillRect((w.x - 6) * SCALE, cy * SCALE, 3 * SCALE, 3 * SCALE);
+    ctx.fillRect((w.x + w.w + 3) * SCALE, cy * SCALE, 3 * SCALE, 3 * SCALE);
+  }
+  // Curtain rod
+  ctx.fillStyle = '#C9A84C';
+  ctx.fillRect((w.x - 10) * SCALE, (w.y - 7) * SCALE, (w.w + 20) * SCALE, 2 * SCALE);
   // Sky
   const grad = ctx.createLinearGradient(w.x * SCALE, w.y * SCALE, w.x * SCALE, (w.y + w.h) * SCALE);
-  grad.addColorStop(0, '#030310');
-  grad.addColorStop(1, '#0d1525');
+  grad.addColorStop(0, '#030310'); grad.addColorStop(1, '#0d1525');
   ctx.fillStyle = grad;
   ctx.fillRect(w.x * SCALE, w.y * SCALE, w.w * SCALE, w.h * SCALE);
   // Moon
   ctx.fillStyle = '#ffffcc';
-  ctx.beginPath();
-  ctx.arc((w.x + 60) * SCALE, (w.y + 15) * SCALE, 6 * SCALE, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.beginPath(); ctx.arc((w.x + 60) * SCALE, (w.y + 15) * SCALE, 6 * SCALE, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = '#030310';
-  ctx.beginPath();
-  ctx.arc((w.x + 63) * SCALE, (w.y + 13) * SCALE, 5 * SCALE, 0, Math.PI * 2);
-  ctx.fill();
-  // Stars
-  const stars = [[10,8],[25,5],[40,12],[55,20],[15,25],[70,8],[35,30],[65,35]];
+  ctx.beginPath(); ctx.arc((w.x + 63) * SCALE, (w.y + 13) * SCALE, 5 * SCALE, 0, Math.PI * 2); ctx.fill();
+  // Moon glow
+  ctx.fillStyle = 'rgba(255,255,200,0.03)';
+  ctx.beginPath(); ctx.arc((w.x + 60) * SCALE, (w.y + 15) * SCALE, 15 * SCALE, 0, Math.PI * 2); ctx.fill();
+  // Stars — twinkling
+  const stars = [[10,8],[25,5],[40,12],[55,20],[15,25],[70,8],[35,30],[65,35],[20,40],[50,45],[75,15],[30,15],[8,45],[62,50]];
   stars.forEach(([sx, sy], i) => {
     const bright = Math.sin(t * 2 + i * 1.7) * 0.3 + 0.7;
     ctx.fillStyle = `rgba(255,255,220,${bright})`;
     ctx.fillRect((w.x + sx) * SCALE, (w.y + sy) * SCALE, SCALE, SCALE);
+    if (bright > 0.85) {
+      ctx.fillStyle = `rgba(255,255,220,${(bright-0.85)*2})`;
+      ctx.fillRect((w.x + sx - 1) * SCALE, (w.y + sy) * SCALE, SCALE, SCALE);
+      ctx.fillRect((w.x + sx + 1) * SCALE, (w.y + sy) * SCALE, SCALE, SCALE);
+      ctx.fillRect((w.x + sx) * SCALE, (w.y + sy - 1) * SCALE, SCALE, SCALE);
+      ctx.fillRect((w.x + sx) * SCALE, (w.y + sy + 1) * SCALE, SCALE, SCALE);
+    }
   });
   // Skyline
-  const buildings = [
-    [5, 45, 10, 25], [17, 38, 8, 32], [27, 50, 12, 20], [41, 42, 7, 28],
-    [50, 48, 14, 22], [66, 40, 10, 30]
-  ];
+  const buildings = [[5,45,10,25],[17,38,8,32],[27,50,12,20],[41,42,7,28],[50,48,14,22],[66,40,10,30]];
   buildings.forEach(([bx, by, bw, bh]) => {
     ctx.fillStyle = COL.building1;
     ctx.fillRect((w.x + bx) * SCALE, (w.y + by) * SCALE, bw * SCALE, bh * SCALE);
     for (let wy = by + 3; wy < by + bh - 2; wy += 5) {
       for (let wx = bx + 2; wx < bx + bw - 2; wx += 4) {
         const lit = Math.sin(wx * 7 + wy * 3 + t * 0.3) > 0.2;
-        ctx.fillStyle = lit ? '#C9A84C' : '#0a0a1a';
+        ctx.fillStyle = lit ? 'rgba(201,168,76,0.8)' : '#0a0a1a';
         ctx.fillRect((w.x + wx) * SCALE, (w.y + wy) * SCALE, 2 * SCALE, 2 * SCALE);
       }
     }
   });
-  // Window dividers — dark wood
+  // Window dividers
   ctx.fillStyle = COL.darkWood;
   ctx.fillRect((w.x + w.w / 2 - 1) * SCALE, w.y * SCALE, 2 * SCALE, w.h * SCALE);
   ctx.fillRect(w.x * SCALE, (w.y + w.h / 2 - 1) * SCALE, w.w * SCALE, 2 * SCALE);
@@ -315,51 +385,73 @@ function drawWindow(t) {
 
 function drawWallScreen(t) {
   const s = ROOM.wallScreen;
-  // Elegant frame — dark wood + gold border
+  // Ornate frame
   ctx.fillStyle = COL.darkWood;
-  ctx.fillRect((s.x - 5) * SCALE, (s.y - 5) * SCALE, (s.w + 10) * SCALE, (s.h + 10) * SCALE);
+  ctx.fillRect((s.x - 6) * SCALE, (s.y - 6) * SCALE, (s.w + 12) * SCALE, (s.h + 12) * SCALE);
+  // Gold border with corner ornaments
   ctx.fillStyle = '#C9A84C';
-  ctx.fillRect((s.x - 4) * SCALE, (s.y - 4) * SCALE, (s.w + 8) * SCALE, SCALE);
-  ctx.fillRect((s.x - 4) * SCALE, (s.y + s.h + 3) * SCALE, (s.w + 8) * SCALE, SCALE);
-  ctx.fillRect((s.x - 4) * SCALE, (s.y - 4) * SCALE, SCALE, (s.h + 8) * SCALE);
-  ctx.fillRect((s.x + s.w + 3) * SCALE, (s.y - 4) * SCALE, SCALE, (s.h + 8) * SCALE);
+  ctx.fillRect((s.x - 5) * SCALE, (s.y - 5) * SCALE, (s.w + 10) * SCALE, SCALE);
+  ctx.fillRect((s.x - 5) * SCALE, (s.y + s.h + 4) * SCALE, (s.w + 10) * SCALE, SCALE);
+  ctx.fillRect((s.x - 5) * SCALE, (s.y - 5) * SCALE, SCALE, (s.h + 10) * SCALE);
+  ctx.fillRect((s.x + s.w + 4) * SCALE, (s.y - 5) * SCALE, SCALE, (s.h + 10) * SCALE);
+  // Corner ornaments
+  const corners = [[s.x-5, s.y-5],[s.x+s.w+2, s.y-5],[s.x-5, s.y+s.h+2],[s.x+s.w+2, s.y+s.h+2]];
+  corners.forEach(([cx,cy]) => {
+    ctx.fillStyle = '#C9A84C';
+    ctx.fillRect(cx*SCALE, cy*SCALE, 3*SCALE, 3*SCALE);
+    ctx.fillStyle = '#E0C060';
+    ctx.fillRect((cx+1)*SCALE, (cy+1)*SCALE, SCALE, SCALE);
+  });
   // Screen bg
-  ctx.fillStyle = '#080404';
+  ctx.fillStyle = '#050202';
   ctx.fillRect(s.x * SCALE, s.y * SCALE, s.w * SCALE, s.h * SCALE);
   // Scanlines
   for (let y = s.y; y < s.y + s.h; y += 2) {
-    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.fillStyle = 'rgba(0,0,0,0.1)';
     ctx.fillRect(s.x * SCALE, y * SCALE, s.w * SCALE, SCALE);
   }
-  // Title — THE CONTINENTAL in gold
-  drawText('THE CONTINENTAL', s.x + 6, s.y + 6, '#C9A84C', 2);
-  // Decorative line under title
+  // THE CONTINENTAL — elegant gold with shadow
+  drawText('THE CONTINENTAL', s.x + (s.w - textWidth('THE CONTINENTAL', 2))/2 + 1, s.y + 7, 'rgba(0,0,0,0.5)', 2);
+  drawText('THE CONTINENTAL', s.x + (s.w - textWidth('THE CONTINENTAL', 2))/2, s.y + 6, '#C9A84C', 2);
+  // Decorative dividers
   ctx.fillStyle = 'rgba(201,168,76,0.5)';
-  ctx.fillRect((s.x + 6) * SCALE, (s.y + 18) * SCALE, (s.w - 12) * SCALE, SCALE);
-  // Clock
+  ctx.fillRect((s.x + 8) * SCALE, (s.y + 19) * SCALE, (s.w - 16) * SCALE, SCALE);
+  // Diamond ornaments on divider
+  const divMid = s.x + s.w/2;
+  ctx.fillStyle = '#C9A84C';
+  ctx.fillRect((divMid - 1) * SCALE, (s.y + 18) * SCALE, 3 * SCALE, 3 * SCALE);
+  // Clock display
   const now = new Date();
   const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
   const tw = textWidth(timeStr, 1);
-  drawText(timeStr, s.x + (s.w - tw) / 2, s.y + 24, '#C9A84C', 1);
-  // Date
+  drawText(timeStr, s.x + (s.w - tw) / 2, s.y + 25, '#C9A84C', 1);
   const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   const dw = textWidth(dateStr, 1);
-  drawText(dateStr, s.x + (s.w - dw) / 2, s.y + 34, '#8b7340', 1);
-  // Status dots
+  drawText(dateStr, s.x + (s.w - dw) / 2, s.y + 33, '#8b7340', 1);
+  // Agent status dots
+  const statusColors = { working: '#00ff41', thinking: '#C9A84C', chatting: '#00aaff', idle: '#666', sleeping: '#333', alert: '#ff4444' };
   agentData.agents.forEach((a, i) => {
-    const dotX = s.x + 20 + i * 40;
-    const dotY = s.y + 46;
-    const colors = { working: '#00ff41', thinking: '#C9A84C', chatting: '#00aaff', idle: '#666', sleeping: '#333', alert: '#ff4444' };
-    ctx.fillStyle = colors[a.status] || '#666';
+    const dotX = s.x + 10 + i * 34;
+    const dotY = s.y + 44;
+    ctx.fillStyle = statusColors[a.status] || '#666';
     const pulse = Math.sin(t * 3 + i) * 0.3 + 0.7;
-    ctx.globalAlpha = a.status === 'alert' ? pulse : 1;
+    ctx.globalAlpha = a.status === 'alert' ? pulse : (a.id === 'scout' ? 0.3 : 1);
     ctx.fillRect(dotX * SCALE, dotY * SCALE, 4 * SCALE, 4 * SCALE);
     ctx.globalAlpha = 1;
-    drawText(a.name.substring(0, 5), dotX - 4, dotY + 6, '#d4c4a0', 1);
+    const nm = a.name.substring(0, 6);
+    drawText(nm, dotX - 2, dotY + 7, a.id === 'scout' ? '#555' : '#d4c4a0', 1);
   });
-  // Screen glow — warm amber
-  ctx.fillStyle = 'rgba(201,168,76,0.02)';
-  ctx.fillRect((s.x - 10) * SCALE, (s.y - 5) * SCALE, (s.w + 20) * SCALE, (s.h + 15) * SCALE);
+  // Subtitle
+  drawText('EST. 2026', s.x + (s.w - textWidth('EST. 2026', 1))/2, s.y + 58, 'rgba(201,168,76,0.3)', 1);
+  // Screen glow
+  const grad = ctx.createRadialGradient(
+    (s.x + s.w/2) * SCALE, (s.y + s.h/2) * SCALE, 5 * SCALE,
+    (s.x + s.w/2) * SCALE, (s.y + s.h/2) * SCALE, 80 * SCALE
+  );
+  grad.addColorStop(0, 'rgba(201,168,76,0.03)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect((s.x - 40) * SCALE, (s.y - 20) * SCALE, (s.w + 80) * SCALE, (s.h + 60) * SCALE);
 }
 
 function drawDesk(d, monitorCount, glowColor) {
@@ -367,7 +459,6 @@ function drawDesk(d, monitorCount, glowColor) {
   ctx.fillRect(d.x * SCALE, d.y * SCALE, d.w * SCALE, d.h * SCALE);
   ctx.fillStyle = '#1a0c06';
   ctx.fillRect(d.x * SCALE, (d.y + d.h - 2) * SCALE, d.w * SCALE, 2 * SCALE);
-  // Gold edge highlight
   ctx.fillStyle = 'rgba(201,168,76,0.15)';
   ctx.fillRect(d.x * SCALE, d.y * SCALE, d.w * SCALE, SCALE);
   for (let i = 0; i < monitorCount; i++) {
@@ -379,8 +470,14 @@ function drawDesk(d, monitorCount, glowColor) {
     ctx.fillRect((mx + 1) * SCALE, (my + 1) * SCALE, 13 * SCALE, 11 * SCALE);
     ctx.fillStyle = glowColor || '#001a00';
     ctx.fillRect((mx + 2) * SCALE, (my + 2) * SCALE, 11 * SCALE, 9 * SCALE);
+    // Monitor stand
     ctx.fillStyle = '#111';
     ctx.fillRect((mx + 6) * SCALE, (my + 14) * SCALE, 3 * SCALE, 3 * SCALE);
+    // Screen content flicker
+    for (let sy = 0; sy < 4; sy++) {
+      ctx.fillStyle = `rgba(0,255,65,${0.05 + Math.sin(time * 4 + i + sy * 2) * 0.03})`;
+      ctx.fillRect((mx + 3) * SCALE, (my + 3 + sy * 2) * SCALE, 9 * SCALE, SCALE);
+    }
   }
   ctx.fillStyle = '#1a0c06';
   ctx.fillRect(d.x * SCALE, (d.y + d.h) * SCALE, 3 * SCALE, 15 * SCALE);
@@ -401,24 +498,48 @@ function drawTradingTerminal(t) {
   }
 }
 
+function drawMalloryMonitor(t) {
+  const d = ROOM.malloryDesk;
+  const mx = d.x + 5, my = d.y - 18;
+  // Show social media style content
+  for (let m = 0; m < 2; m++) {
+    const ox = mx + m * 18;
+    // Purple/pink glow for influencer vibe
+    ctx.fillStyle = `rgba(200,100,255,${0.05 + Math.sin(t * 3 + m) * 0.03})`;
+    ctx.fillRect((ox + 2) * SCALE, (my + 2) * SCALE, 11 * SCALE, 9 * SCALE);
+    // Little "image" rectangles
+    ctx.fillStyle = `rgba(200,100,255,${0.15 + Math.sin(t * 2 + m * 3) * 0.05})`;
+    ctx.fillRect((ox + 3) * SCALE, (my + 3) * SCALE, 5 * SCALE, 4 * SCALE);
+    // Text lines
+    ctx.fillStyle = 'rgba(200,180,255,0.2)';
+    ctx.fillRect((ox + 3) * SCALE, (my + 8) * SCALE, 8 * SCALE, SCALE);
+  }
+}
+
 function drawCouch() {
   const c = ROOM.couch;
-  // Burgundy leather couch
   ctx.fillStyle = COL.couch1;
   ctx.fillRect(c.x * SCALE, (c.y - 8) * SCALE, c.w * SCALE, 10 * SCALE);
   ctx.fillStyle = COL.couch2;
   ctx.fillRect(c.x * SCALE, (c.y + 2) * SCALE, c.w * SCALE, c.h * SCALE);
-  // Gold button tufts
+  // Gold tufts
   ctx.fillStyle = 'rgba(201,168,76,0.3)';
-  for (let bx = c.x + 8; bx < c.x + c.w - 5; bx += 15) {
+  for (let bx = c.x + 8; bx < c.x + c.w - 5; bx += 12) {
     ctx.fillRect(bx * SCALE, (c.y - 3) * SCALE, SCALE, SCALE);
   }
   ctx.fillStyle = COL.couch1;
   ctx.fillRect((c.x + c.w / 3) * SCALE, (c.y + 2) * SCALE, SCALE, (c.h - 2) * SCALE);
   ctx.fillRect((c.x + 2 * c.w / 3) * SCALE, (c.y + 2) * SCALE, SCALE, (c.h - 2) * SCALE);
+  // Arms
   ctx.fillStyle = COL.couch1;
   ctx.fillRect((c.x - 4) * SCALE, (c.y - 5) * SCALE, 5 * SCALE, (c.h + 10) * SCALE);
   ctx.fillRect((c.x + c.w - 1) * SCALE, (c.y - 5) * SCALE, 5 * SCALE, (c.h + 10) * SCALE);
+  // Throw pillow
+  ctx.fillStyle = '#C9A84C';
+  ctx.fillRect((c.x + 5) * SCALE, (c.y - 4) * SCALE, 10 * SCALE, 7 * SCALE);
+  ctx.fillStyle = '#8b7340';
+  ctx.fillRect((c.x + 6) * SCALE, (c.y - 3) * SCALE, 8 * SCALE, 5 * SCALE);
+  // Legs
   ctx.fillStyle = '#1a0a0a';
   ctx.fillRect(c.x * SCALE, (c.y + c.h) * SCALE, 3 * SCALE, 4 * SCALE);
   ctx.fillRect((c.x + c.w - 3) * SCALE, (c.y + c.h) * SCALE, 3 * SCALE, 4 * SCALE);
@@ -430,9 +551,9 @@ function drawCoffeeMachine(t) {
   ctx.fillRect(c.x * SCALE, c.y * SCALE, c.w * SCALE, c.h * SCALE);
   ctx.fillStyle = '#2a1a0a';
   ctx.fillRect((c.x + 2) * SCALE, (c.y + 2) * SCALE, (c.w - 4) * SCALE, 8 * SCALE);
-  // Gold accent strip
   ctx.fillStyle = 'rgba(201,168,76,0.4)';
   ctx.fillRect((c.x + 1) * SCALE, (c.y + 11) * SCALE, (c.w - 2) * SCALE, SCALE);
+  // LED
   ctx.fillStyle = Math.sin(t * 4) > 0 ? '#ff3333' : '#aa1111';
   ctx.fillRect((c.x + c.w - 4) * SCALE, (c.y + 3) * SCALE, 2 * SCALE, 2 * SCALE);
   ctx.fillStyle = '#1a0c06';
@@ -442,16 +563,21 @@ function drawCoffeeMachine(t) {
   ctx.fillRect((c.x + 5) * SCALE, (c.y + 18) * SCALE, 6 * SCALE, 5 * SCALE);
   ctx.fillStyle = '#3a2010';
   ctx.fillRect((c.x + 6) * SCALE, (c.y + 18) * SCALE, 4 * SCALE, 2 * SCALE);
-  // Multi-wisp steam animation
-  for (let s = 0; s < 3; s++) {
-    const phase = t * 3 + s * 2.1;
-    const sx = c.x + 6 + s * 2 + Math.sin(phase) * 1.5;
-    const sy = c.y + 14 - Math.abs(Math.sin(phase * 0.7)) * 4;
+  // Handle
+  ctx.fillStyle = '#d4c4a0';
+  ctx.fillRect((c.x + 11) * SCALE, (c.y + 19) * SCALE, 2 * SCALE, 3 * SCALE);
+  // Multi-wisp steam
+  for (let s = 0; s < 4; s++) {
+    const phase = t * 3 + s * 1.8;
+    const sx = c.x + 5 + s * 1.5 + Math.sin(phase) * 1.5;
+    const sy = c.y + 14 - Math.abs(Math.sin(phase * 0.7)) * 5;
     const alpha = 0.15 + Math.sin(phase) * 0.08;
     ctx.fillStyle = `rgba(200,190,170,${alpha})`;
     ctx.fillRect(sx * SCALE, sy * SCALE, SCALE, 2 * SCALE);
-    ctx.fillStyle = `rgba(200,190,170,${alpha * 0.6})`;
+    ctx.fillStyle = `rgba(200,190,170,${alpha * 0.5})`;
     ctx.fillRect((sx + Math.sin(phase + 1) * 0.8) * SCALE, (sy - 2) * SCALE, SCALE, SCALE);
+    ctx.fillStyle = `rgba(200,190,170,${alpha * 0.25})`;
+    ctx.fillRect((sx + Math.sin(phase + 2) * 1.2) * SCALE, (sy - 4) * SCALE, SCALE, SCALE);
   }
   // Table
   ctx.fillStyle = COL.darkWood;
@@ -463,28 +589,109 @@ function drawCoffeeMachine(t) {
   ctx.fillRect((c.x + c.w + 2) * SCALE, (c.y + c.h + 3) * SCALE, 3 * SCALE, 12 * SCALE);
 }
 
-function drawPennyStation() {
-  const d = ROOM.pennyDesk;
-  ctx.globalAlpha = 0.35;
-  ctx.fillStyle = '#4a3a2a';
-  ctx.fillRect((d.x + 10) * SCALE, (d.y - 20) * SCALE, 20 * SCALE, 25 * SCALE);
-  ctx.fillStyle = '#3a2a1a';
-  ctx.fillRect((d.x + 12) * SCALE, (d.y - 18) * SCALE, 16 * SCALE, 20 * SCALE);
+function drawPlant(px, py, size, t) {
+  // Pot
+  ctx.fillStyle = COL.pot;
+  ctx.fillRect((px - 1) * SCALE, (py + size - 5) * SCALE, (size + 2) * SCALE, 6 * SCALE);
+  ctx.fillStyle = '#5a2a10';
+  ctx.fillRect(px * SCALE, (py + size - 4) * SCALE, size * SCALE, 4 * SCALE);
+  // Soil
   ctx.fillStyle = '#2a1a0a';
-  ctx.fillRect((d.x + 8) * SCALE, (d.y + 5) * SCALE, 2 * SCALE, 25 * SCALE);
-  ctx.fillRect((d.x + 30) * SCALE, (d.y + 5) * SCALE, 2 * SCALE, 25 * SCALE);
-  ctx.fillRect((d.x + 19) * SCALE, (d.y + 5) * SCALE, 2 * SCALE, 28 * SCALE);
-  ctx.fillStyle = '#2a1a0a';
-  ctx.fillRect(d.x * SCALE, d.y * SCALE, d.w * SCALE, d.h * SCALE);
+  ctx.fillRect(px * SCALE, (py + size - 5) * SCALE, size * SCALE, 2 * SCALE);
+  // Leaves
+  const cx = px + size / 2;
+  for (let i = 0; i < 5; i++) {
+    const angle = (i / 5) * Math.PI * 2 + t * 0.2;
+    const sway = Math.sin(t * 1.5 + i * 1.3) * 1.5;
+    const lx = cx + Math.cos(angle) * (size * 0.6) + sway;
+    const ly = py + size - 8 + Math.sin(angle) * (size * 0.3);
+    ctx.fillStyle = i % 2 === 0 ? COL.plant2 : COL.plant3;
+    ctx.fillRect(lx * SCALE, ly * SCALE, 3 * SCALE, 2 * SCALE);
+    ctx.fillStyle = COL.plant1;
+    ctx.fillRect((lx + 1) * SCALE, (ly - 1) * SCALE, 2 * SCALE, SCALE);
+  }
+  // Stem
+  ctx.fillStyle = COL.plant1;
+  ctx.fillRect((cx - 0.5) * SCALE, (py + size - 10) * SCALE, SCALE, 6 * SCALE);
+}
+
+function drawScoutStation(t) {
+  const s = ROOM.scoutStation;
+  ctx.globalAlpha = 0.3;
+  // Radar dish / telescope setup
+  const cx = s.x + s.w / 2;
+  const cy = s.y + 5;
+  // Tripod
+  ctx.fillStyle = '#4a4a4a';
+  ctx.fillRect((cx - 1) * SCALE, (cy + 10) * SCALE, 2 * SCALE, 20 * SCALE);
+  ctx.fillRect((cx - 8) * SCALE, (cy + 28) * SCALE, 6 * SCALE, 2 * SCALE);
+  ctx.fillRect((cx + 2) * SCALE, (cy + 28) * SCALE, 6 * SCALE, 2 * SCALE);
+  // Dish
+  ctx.fillStyle = '#6a6a7a';
+  ctx.beginPath();
+  ctx.arc(cx * SCALE, cy * SCALE, 10 * SCALE, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#5a5a6a';
+  ctx.beginPath();
+  ctx.arc(cx * SCALE, cy * SCALE, 7 * SCALE, 0, Math.PI * 2);
+  ctx.fill();
+  // Radar sweep
+  const sweepAngle = t * 2;
+  ctx.fillStyle = 'rgba(0,255,100,0.3)';
+  ctx.beginPath();
+  ctx.moveTo(cx * SCALE, cy * SCALE);
+  ctx.arc(cx * SCALE, cy * SCALE, 9 * SCALE, sweepAngle, sweepAngle + 0.5);
+  ctx.fill();
+  // Center dot
+  ctx.fillStyle = '#00ff41';
+  ctx.fillRect((cx - 1) * SCALE, (cy - 1) * SCALE, 2 * SCALE, 2 * SCALE);
   ctx.globalAlpha = 1;
-  ctx.globalAlpha = 0.2;
-  drawSprite(d.x + 5, d.y + 2, 'penny');
+  // Label
+  ctx.globalAlpha = 0.4;
+  drawText('SCOUT', cx - 8, cy + 33, '#6b5530', 1);
+  drawText('COMING SOON', cx - 18, cy + 40, '#555', 1);
   ctx.globalAlpha = 1;
-  drawText('COMING SOON', d.x - 2, d.y + d.h + 18, '#6b5530', 1);
+  // Blinking standby light
+  if (Math.sin(t * 2) > 0.7) {
+    ctx.globalAlpha = 0.3;
+    ctx.fillStyle = '#00ff41';
+    ctx.fillRect((cx + 8) * SCALE, (cy + 12) * SCALE, 2 * SCALE, 2 * SCALE);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawBookshelf() {
+  const bx = 420, by = 35, bw = 48, bh = 85;
+  ctx.fillStyle = COL.darkWood;
+  ctx.fillRect(bx * SCALE, by * SCALE, bw * SCALE, bh * SCALE);
+  // Gold trim
+  ctx.fillStyle = 'rgba(201,168,76,0.25)';
+  ctx.fillRect(bx * SCALE, by * SCALE, bw * SCALE, SCALE);
+  ctx.fillRect(bx * SCALE, (by + bh - 1) * SCALE, bw * SCALE, SCALE);
+  ctx.fillRect(bx * SCALE, by * SCALE, SCALE, bh * SCALE);
+  ctx.fillRect((bx + bw - 1) * SCALE, by * SCALE, SCALE, bh * SCALE);
+  const bookColors = ['#4a1520', '#1a3a2a', '#C9A84C', '#2a2040', '#5a2010', '#1a2a4a', '#3a1a3a', '#1a3a3a'];
+  for (let sy = 0; sy < 4; sy++) {
+    const shelfY = by + 3 + sy * 21;
+    ctx.fillStyle = '#3a2515';
+    ctx.fillRect((bx + 2) * SCALE, shelfY * SCALE, (bw - 4) * SCALE, 2 * SCALE);
+    let bookX = bx + 3;
+    for (let b = 0; b < 6; b++) {
+      const bookW = 3 + ((sy * 6 + b) * 7 % 3);
+      const bookH = 13 + ((sy * 6 + b) * 11 % 5);
+      ctx.fillStyle = bookColors[(sy * 6 + b) % bookColors.length];
+      ctx.fillRect(bookX * SCALE, (shelfY - bookH + 2) * SCALE, bookW * SCALE, bookH * SCALE);
+      // Spine highlight
+      ctx.fillStyle = 'rgba(255,255,255,0.05)';
+      ctx.fillRect(bookX * SCALE, (shelfY - bookH + 2) * SCALE, SCALE, bookH * SCALE);
+      bookX += bookW + 1;
+      if (bookX > bx + bw - 5) break;
+    }
+  }
 }
 
 // ============================================================
-// SPRITE DRAWING
+// SPRITE DRAWING — Characters
 // ============================================================
 function drawPixelBlock(x, y, w, h, color) {
   ctx.fillStyle = color;
@@ -495,13 +702,12 @@ function drawCloe(x, y, frame, action, dir) {
   const f = frame | 0;
   const d = dir || 1;
   ctx.save();
-  if (d < 0) {
-    ctx.translate((x * 2 + 16) * SCALE, 0);
-    ctx.scale(-1, 1);
-    x = 0;
-  }
+  if (d < 0) { ctx.translate((x * 2 + 16) * SCALE, 0); ctx.scale(-1, 1); x = 0; }
   const bx = d < 0 ? 0 : x;
   const by = y;
+
+  // Idle breathing
+  const breathe = action === 'idle' ? Math.sin(f * 0.05) * 0.5 : 0;
 
   if (action === 'sleeping') {
     drawPixelBlock(bx + 2, by + 12, 12, 6, COL.cloe1);
@@ -512,15 +718,16 @@ function drawCloe(x, y, frame, action, dir) {
     ctx.restore(); return;
   }
 
-  // Ears
-  drawPixelBlock(bx + 2, by, 3, 4, COL.cloe2);
-  drawPixelBlock(bx + 3, by + 1, 1, 2, '#ffccaa');
+  // Ears with twitch
+  const earTwitch = Math.sin(f * 0.08) > 0.95 ? -1 : 0;
+  drawPixelBlock(bx + 2, by + earTwitch, 3, 4, COL.cloe2);
+  drawPixelBlock(bx + 3, by + 1 + earTwitch, 1, 2, '#ffccaa');
   drawPixelBlock(bx + 9, by, 3, 4, COL.cloe2);
   drawPixelBlock(bx + 10, by + 1, 1, 2, '#ffccaa');
   // Head
   drawPixelBlock(bx + 2, by + 3, 10, 8, COL.cloe1);
   drawPixelBlock(bx + 3, by + 4, 8, 6, COL.cloe2);
-  // Eyes — blink every ~3s
+  // Eyes
   const blinkCloe = (Math.sin(f * 0.033) > 0.97);
   if (blinkCloe) {
     drawPixelBlock(bx + 4, by + 6, 2, 1, '#1a1a1a');
@@ -531,18 +738,17 @@ function drawCloe(x, y, frame, action, dir) {
     drawPixelBlock(bx + 4, by + 5, 1, 1, '#ffffff');
     drawPixelBlock(bx + 8, by + 5, 1, 1, '#ffffff');
   }
+  // Nose/muzzle
   drawPixelBlock(bx + 6, by + 8, 2, 1, '#1a1a1a');
   drawPixelBlock(bx + 5, by + 7, 4, 2, '#e8c89a');
   // Body
-  drawPixelBlock(bx + 3, by + 11, 8, 8, COL.cloe1);
-  drawPixelBlock(bx + 4, by + 12, 6, 5, COL.cloe2);
+  drawPixelBlock(bx + 3, by + 11 + breathe, 8, 8, COL.cloe1);
+  drawPixelBlock(bx + 4, by + 12 + breathe, 6, 5, COL.cloe2);
 
   if (action === 'walking') {
     const legPhase = Math.sin(f * 0.4);
-    const l1 = Math.max(0, legPhase * 2);
-    const l2 = Math.max(0, -legPhase * 2);
-    drawPixelBlock(bx + 3, by + 19, 3, 4 + l1, COL.cloe3);
-    drawPixelBlock(bx + 8, by + 19, 3, 4 + l2, COL.cloe3);
+    drawPixelBlock(bx + 3, by + 19, 3, 4 + Math.max(0, legPhase * 2), COL.cloe3);
+    drawPixelBlock(bx + 8, by + 19, 3, 4 + Math.max(0, -legPhase * 2), COL.cloe3);
     const tailOff = Math.sin(f * 0.5) * 2;
     drawPixelBlock(bx + 11, by + 13 + tailOff, 4, 2, COL.cloeTail);
     drawPixelBlock(bx + 13, by + 12 + tailOff, 2, 2, COL.cloeTail);
@@ -559,11 +765,16 @@ function drawCloe(x, y, frame, action, dir) {
     drawPixelBlock(bx + 10, by + 8, 3, 5, COL.cloe1);
     drawPixelBlock(bx + 4, by + 19, 3, 4, COL.cloe3);
     drawPixelBlock(bx + 7, by + 19, 3, 4, COL.cloe3);
-    drawPixelBlock(bx + 11, by + 14, 4, 2, COL.cloeTail);
+    // Tail gentle sway
+    const tailSway = Math.sin(f * 0.1) * 1;
+    drawPixelBlock(bx + 11 + tailSway, by + 14, 4, 2, COL.cloeTail);
   } else {
     drawPixelBlock(bx + 4, by + 19, 3, 4, COL.cloe3);
     drawPixelBlock(bx + 7, by + 19, 3, 4, COL.cloe3);
-    drawPixelBlock(bx + 11, by + 14, 3, 2, COL.cloeTail);
+    // Idle tail wag
+    const tailWag = Math.sin(f * 0.15) * 1.5;
+    drawPixelBlock(bx + 11 + tailWag, by + 14, 3, 2, COL.cloeTail);
+    drawPixelBlock(bx + 13 + tailWag, by + 13, 2, 2, COL.cloeTail);
   }
   ctx.restore();
 }
@@ -572,13 +783,10 @@ function drawGlenn(x, y, frame, action, dir) {
   const f = frame | 0;
   const d = dir || 1;
   ctx.save();
-  if (d < 0) {
-    ctx.translate((x * 2 + 16) * SCALE, 0);
-    ctx.scale(-1, 1);
-    x = 0;
-  }
+  if (d < 0) { ctx.translate((x * 2 + 16) * SCALE, 0); ctx.scale(-1, 1); x = 0; }
   const bx = d < 0 ? 0 : x;
   const by = y;
+  const breathe = action === 'idle' ? Math.sin(f * 0.04) * 0.5 : 0;
 
   if (action === 'sleeping') {
     drawPixelBlock(bx + 2, by + 12, 12, 6, COL.glenn2);
@@ -597,7 +805,7 @@ function drawGlenn(x, y, frame, action, dir) {
   // Head
   drawPixelBlock(bx + 2, by + 3, 10, 8, COL.glenn1);
   drawPixelBlock(bx + 3, by + 4, 8, 6, COL.glenn2);
-  // Eyes — glowing green with pulse
+  // Eyes — glowing green
   const eyePulse = 0.8 + Math.sin(f * 0.05) * 0.2;
   ctx.globalAlpha = eyePulse;
   drawPixelBlock(bx + 4, by + 5, 2, 2, COL.glennEye);
@@ -609,15 +817,15 @@ function drawGlenn(x, y, frame, action, dir) {
   drawPixelBlock(bx + 5, by + 7, 4, 3, '#3a4a5a');
   drawPixelBlock(bx + 6, by + 8, 2, 1, '#1a1a1a');
   // Body
-  drawPixelBlock(bx + 2, by + 11, 10, 8, COL.glenn2);
-  drawPixelBlock(bx + 3, by + 12, 8, 5, COL.glenn1);
+  drawPixelBlock(bx + 2, by + 11 + breathe, 10, 8, COL.glenn2);
+  drawPixelBlock(bx + 3, by + 12 + breathe, 8, 5, COL.glenn1);
+  // Tie
+  drawPixelBlock(bx + 6, by + 12 + breathe, 2, 4, '#C9A84C');
 
   if (action === 'walking') {
     const legPhase = Math.sin(f * 0.4);
-    const l1 = Math.max(0, legPhase * 2);
-    const l2 = Math.max(0, -legPhase * 2);
-    drawPixelBlock(bx + 3, by + 19, 3, 4 + l1, COL.glenn3);
-    drawPixelBlock(bx + 8, by + 19, 3, 4 + l2, COL.glenn3);
+    drawPixelBlock(bx + 3, by + 19, 3, 4 + Math.max(0, legPhase * 2), COL.glenn3);
+    drawPixelBlock(bx + 8, by + 19, 3, 4 + Math.max(0, -legPhase * 2), COL.glenn3);
     drawPixelBlock(bx + 12, by + 13, 3, 2, COL.glenn2);
   } else if (action === 'typing' || action === 'analyzing') {
     drawPixelBlock(bx + 1, by + 13, 2, 3, COL.glenn3);
@@ -636,20 +844,99 @@ function drawGlenn(x, y, frame, action, dir) {
   } else {
     drawPixelBlock(bx + 3, by + 19, 3, 4, COL.glenn3);
     drawPixelBlock(bx + 8, by + 19, 3, 4, COL.glenn3);
-    drawPixelBlock(bx + 12, by + 14, 3, 2, COL.glenn2);
+    // Idle tail wag
+    const tailWag = Math.sin(f * 0.12) * 1;
+    drawPixelBlock(bx + 12 + tailWag, by + 14, 3, 2, COL.glenn2);
   }
   ctx.restore();
 }
 
-function drawSprite(x, y, type) {
-  if (type === 'penny') {
-    drawPixelBlock(x + 3, y + 2, 8, 8, '#4a4a6a');
-    drawPixelBlock(x + 4, y + 10, 6, 6, '#3a3a5a');
-    drawPixelBlock(x + 5, y + 16, 4, 4, '#2a2a4a');
-    drawPixelBlock(x + 5, y, 2, 3, '#3a5a6a');
-    drawPixelBlock(x + 7, y - 1, 2, 3, '#3a5a6a');
-    drawPixelBlock(x + 9, y, 2, 3, '#3a5a6a');
+function drawMallory(x, y, frame, action, dir) {
+  const f = frame | 0;
+  const d = dir || 1;
+  ctx.save();
+  if (d < 0) { ctx.translate((x * 2 + 16) * SCALE, 0); ctx.scale(-1, 1); x = 0; }
+  const bx = d < 0 ? 0 : x;
+  const by = y;
+  const breathe = action === 'idle' ? Math.sin(f * 0.045) * 0.4 : 0;
+
+  if (action === 'sleeping') {
+    drawPixelBlock(bx + 2, by + 10, 12, 6, COL.mallory1);
+    drawPixelBlock(bx + 3, by + 8, 10, 4, COL.malloryHair);
+    drawPixelBlock(bx + 3, by + 16, 4, 4, COL.mallory3);
+    drawPixelBlock(bx + 9, by + 16, 4, 4, COL.mallory3);
+    ctx.restore(); return;
   }
+
+  // Hair — long, flowing, dark with copper highlights
+  drawPixelBlock(bx + 1, by - 1, 12, 4, COL.malloryHair);
+  drawPixelBlock(bx + 0, by + 2, 14, 3, COL.malloryHair);
+  // Copper highlights
+  drawPixelBlock(bx + 3, by, 2, 1, COL.malloryCopperHL);
+  drawPixelBlock(bx + 8, by + 1, 2, 1, COL.malloryCopperHL);
+  drawPixelBlock(bx + 1, by + 3, 1, 2, COL.malloryCopperHL);
+  drawPixelBlock(bx + 12, by + 2, 1, 3, COL.malloryCopperHL);
+  // Hair flowing down sides
+  drawPixelBlock(bx, by + 5, 2, 8, COL.malloryHair);
+  drawPixelBlock(bx + 12, by + 5, 2, 8, COL.malloryHair);
+  drawPixelBlock(bx + 1, by + 6, 1, 6, COL.malloryCopperHL);
+  drawPixelBlock(bx + 12, by + 7, 1, 5, COL.malloryCopperHL);
+
+  // Face
+  drawPixelBlock(bx + 2, by + 4, 10, 7, COL.mallory1);
+  drawPixelBlock(bx + 3, by + 5, 8, 5, COL.mallory2);
+  // Eyes
+  const blink = Math.sin(f * 0.035) > 0.97;
+  if (blink) {
+    drawPixelBlock(bx + 4, by + 6, 2, 1, '#1a1a1a');
+    drawPixelBlock(bx + 8, by + 6, 2, 1, '#1a1a1a');
+  } else {
+    drawPixelBlock(bx + 4, by + 5, 2, 2, '#2a1a10');
+    drawPixelBlock(bx + 8, by + 5, 2, 2, '#2a1a10');
+    drawPixelBlock(bx + 4, by + 5, 1, 1, '#ffffff');
+    drawPixelBlock(bx + 8, by + 5, 1, 1, '#ffffff');
+    // Eyelashes
+    drawPixelBlock(bx + 3, by + 5, 1, 1, '#1a1a1a');
+    drawPixelBlock(bx + 10, by + 5, 1, 1, '#1a1a1a');
+  }
+  // Lips
+  drawPixelBlock(bx + 5, by + 8, 4, 1, '#c47a6a');
+  // Nose
+  drawPixelBlock(bx + 6, by + 7, 2, 1, COL.mallory2);
+
+  // Body — stylish dark top with gold accent
+  drawPixelBlock(bx + 2, by + 11 + breathe, 10, 8, COL.malloryTop);
+  drawPixelBlock(bx + 3, by + 12 + breathe, 8, 5, '#252540');
+  // Necklace
+  drawPixelBlock(bx + 4, by + 11 + breathe, 6, 1, COL.malloryAccent);
+  drawPixelBlock(bx + 6, by + 12 + breathe, 2, 1, COL.malloryAccent);
+
+  if (action === 'walking') {
+    const legPhase = Math.sin(f * 0.4);
+    drawPixelBlock(bx + 3, by + 19, 3, 4 + Math.max(0, legPhase * 2), COL.mallory3);
+    drawPixelBlock(bx + 8, by + 19, 3, 4 + Math.max(0, -legPhase * 2), COL.mallory3);
+    // Hair sway
+    const sway = Math.sin(f * 0.3) * 1;
+    drawPixelBlock(bx - 1 + sway, by + 10, 2, 4, COL.malloryHair);
+    drawPixelBlock(bx + 13 - sway, by + 10, 2, 4, COL.malloryHair);
+  } else if (action === 'typing') {
+    drawPixelBlock(bx + 1, by + 13, 2, 3, COL.mallory3);
+    drawPixelBlock(bx + 11, by + 13, 2, 3, COL.mallory3);
+    const armBob = f % 4 < 2 ? 0 : 1;
+    drawPixelBlock(bx, by + 15 + armBob, 2, 2, COL.mallory1);
+    drawPixelBlock(bx + 12, by + 16 - armBob, 2, 2, COL.mallory1);
+    drawPixelBlock(bx + 4, by + 19, 3, 4, COL.mallory3);
+    drawPixelBlock(bx + 7, by + 19, 3, 4, COL.mallory3);
+  } else if (action === 'thinking') {
+    // Hand to chin pose
+    drawPixelBlock(bx + 10, by + 7, 3, 5, COL.mallory1);
+    drawPixelBlock(bx + 4, by + 19, 3, 4, COL.mallory3);
+    drawPixelBlock(bx + 7, by + 19, 3, 4, COL.mallory3);
+  } else {
+    drawPixelBlock(bx + 4, by + 19, 3, 4, COL.mallory3);
+    drawPixelBlock(bx + 7, by + 19, 3, 4, COL.mallory3);
+  }
+  ctx.restore();
 }
 
 // ============================================================
@@ -658,7 +945,6 @@ function drawSprite(x, y, type) {
 function drawStatusIcon(x, y, status, t) {
   const bob = Math.sin(t * 3) * 2;
   if (status === 'working') {
-    ctx.fillStyle = '#ffdd00';
     drawPixelBlock(x + 4, y - 10 + bob, 3, 2, '#ffdd00');
     drawPixelBlock(x + 3, y - 8 + bob, 3, 2, '#ffdd00');
     drawPixelBlock(x + 2, y - 6 + bob, 5, 1, '#ffdd00');
@@ -691,10 +977,10 @@ function drawStatusIcon(x, y, status, t) {
 }
 
 // ============================================================
-// PARTICLE SYSTEM — gold dust motes
+// PARTICLE SYSTEM
 // ============================================================
 const particles = [];
-for (let i = 0; i < 35; i++) {
+for (let i = 0; i < 45; i++) {
   particles.push({
     x: Math.random() * VW, y: Math.random() * VH,
     vx: (Math.random() - 0.5) * 0.15, vy: -Math.random() * 0.08 - 0.02,
@@ -751,9 +1037,9 @@ class Agent {
     const status = d.status;
     const poi = ROOM.poi;
     if (status === 'working' || status === 'typing' || status === 'chatting' || status === 'alert') {
-      this.goTo(Math.random() < 0.2 ? poi.coffeeMachine : poi[this.stationPoi]);
+      this.goTo(Math.random() < 0.15 ? poi.coffeeMachine : poi[this.stationPoi]);
     } else if (status === 'thinking') {
-      const choices = [poi[this.stationPoi], poi.windowView, poi[this.stationPoi]];
+      const choices = [poi[this.stationPoi], poi.windowView, poi.center, poi[this.stationPoi]];
       this.goTo(choices[Math.random() * choices.length | 0]);
     } else if (status === 'idle') {
       const all = [poi.couch, poi.coffeeMachine, poi.windowView, poi.center, poi[this.stationPoi]];
@@ -802,6 +1088,8 @@ class Agent {
     if (!d) return;
     const name = d.name.toUpperCase();
     const nw = textWidth(name, 1);
+    // Name shadow
+    drawText(name, this.x + 8 - nw / 2, this.y - 29, 'rgba(0,0,0,0.5)', 1);
     drawText(name, this.x + 7 - nw / 2, this.y - 30, COL.accent, 1);
     drawStatusIcon(this.x, this.y - 24, d.status, t);
   }
@@ -813,6 +1101,7 @@ class Agent {
 const agents = [
   new Agent('cloe', drawCloe, 'cloeStation'),
   new Agent('glenn-gary', drawGlenn, 'glennStation'),
+  new Agent('mallory', drawMallory, 'malloryStation'),
 ];
 
 // ============================================================
@@ -828,13 +1117,13 @@ canvas.addEventListener('click', (e) => {
     if (agent.containsPoint(mx, my)) {
       const d = agent.getData();
       if (d) {
-        document.getElementById('sc-name').textContent = d.name;
+        document.getElementById('sc-name').textContent = d.emoji + ' ' + d.name;
         document.getElementById('sc-role').textContent = d.role;
         document.getElementById('sc-task').textContent = '📋 ' + d.task;
         document.getElementById('sc-stat').textContent = 'Status: ' + d.status + ' | Uptime: ' + d.uptime;
         statusCard.style.display = 'block';
-        statusCard.style.left = e.clientX + 10 + 'px';
-        statusCard.style.top = e.clientY - 60 + 'px';
+        statusCard.style.left = Math.min(e.clientX + 10, window.innerWidth - 220) + 'px';
+        statusCard.style.top = Math.max(e.clientY - 60, 10) + 'px';
         found = true;
         setTimeout(() => { statusCard.style.display = 'none'; }, 3000);
       }
@@ -860,35 +1149,34 @@ let chiptuneInterval = null;
 function startAmbient() {
   if (!audioCtx) return;
   const master = audioCtx.createGain();
-  master.gain.value = 0.10;
+  master.gain.value = 0.08;
   master.connect(audioCtx.destination);
   ambientNodes.push(master);
 
-  // Warm reverb via delay
   const delay = audioCtx.createDelay();
-  delay.delayTime.value = 0.18;
+  delay.delayTime.value = 0.2;
   const feedback = audioCtx.createGain();
-  feedback.gain.value = 0.25;
+  feedback.gain.value = 0.2;
   delay.connect(feedback);
   feedback.connect(delay);
   const wetGain = audioCtx.createGain();
-  wetGain.gain.value = 0.15;
+  wetGain.gain.value = 0.12;
   delay.connect(wetGain);
   wetGain.connect(master);
   ambientNodes.push(delay, feedback, wetGain);
 
-  // Warm pad — jazz chord tones (Cmaj7: C3, E3, G3, B3)
+  // Warm pad
   const padNotes = [130.81, 164.81, 196.00, 246.94];
   padNotes.forEach((freq, i) => {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.type = 'triangle';
     osc.frequency.value = freq;
-    gain.gain.value = 0.025;
+    gain.gain.value = 0.02;
     const lfo = audioCtx.createOscillator();
     const lfoGain = audioCtx.createGain();
     lfo.frequency.value = 0.1 + i * 0.03;
-    lfoGain.gain.value = 0.005;
+    lfoGain.gain.value = 0.004;
     lfo.connect(lfoGain);
     lfoGain.connect(gain.gain);
     lfo.start();
@@ -898,10 +1186,9 @@ function startAmbient() {
     ambientNodes.push(osc, lfo, gain);
   });
 
-  const bpm = 72; // slower, jazzier
+  const bpm = 68;
   const stepTime = 60 / bpm / 2;
 
-  // Jazz lounge melody — chromatic touches, swing feel
   const melody = [
     523.25, 0, 493.88, 0, 440, 0, 392, 329.63,
     0, 349.23, 0, 329.63, 0, 0, 293.66, 0,
@@ -913,7 +1200,6 @@ function startAmbient() {
     0, 493.88, 0, 0, 523.25, 0, 0, 0
   ];
 
-  // Walking bass line
   const bass = [
     130.81, 0, 146.83, 0, 164.81, 0, 174.61, 0,
     196.00, 0, 174.61, 0, 164.81, 0, 146.83, 0,
@@ -926,8 +1212,7 @@ function startAmbient() {
   ];
 
   const arp = [261.63, 329.63, 392, 493.88, 523.25, 493.88, 392, 329.63];
-  let arpIdx = 0;
-  let step = 0;
+  let arpIdx = 0, step = 0;
 
   function playNote(freq, type, vol, duration, dest) {
     if (freq === 0) return;
@@ -946,40 +1231,35 @@ function startAmbient() {
   function tick() {
     if (!soundOn) return;
     const idx = step % melody.length;
-    // Melody — softer square for warmth, send to reverb too
-    playNote(melody[idx], 'square', 0.05, stepTime * 1.8, master);
-    if (melody[idx]) playNote(melody[idx], 'square', 0.02, stepTime * 1.8, delay);
-    // Walking bass — triangle
-    playNote(bass[idx], 'triangle', 0.09, stepTime * 1.6, master);
-    // Jazz arp — every 4 steps
+    playNote(melody[idx], 'square', 0.04, stepTime * 1.8, master);
+    if (melody[idx]) playNote(melody[idx], 'square', 0.015, stepTime * 1.8, delay);
+    playNote(bass[idx], 'triangle', 0.07, stepTime * 1.6, master);
     if (step % 4 === 0) {
-      playNote(arp[arpIdx % arp.length] * 2, 'sine', 0.025, stepTime * 0.8, master);
+      playNote(arp[arpIdx % arp.length] * 2, 'sine', 0.02, stepTime * 0.8, master);
       arpIdx++;
     }
-    // Brushed hi-hat — softer, jazzier
     if (step % 2 === 0) {
       const bufferSize = audioCtx.sampleRate * 0.04;
       const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
       const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.2;
+      for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.15;
       const noise = audioCtx.createBufferSource();
       noise.buffer = buffer;
       const noiseGain = audioCtx.createGain();
-      noiseGain.gain.setValueAtTime(0.015, audioCtx.currentTime);
+      noiseGain.gain.setValueAtTime(0.012, audioCtx.currentTime);
       noiseGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
       const hpf = audioCtx.createBiquadFilter();
       hpf.type = 'highpass'; hpf.frequency.value = 9000;
       noise.connect(hpf); hpf.connect(noiseGain); noiseGain.connect(master);
       noise.start(); noise.stop(audioCtx.currentTime + 0.04);
     }
-    // Kick — softer, deeper
     if (step % 8 === 0) {
       const kick = audioCtx.createOscillator();
       const kickGain = audioCtx.createGain();
       kick.type = 'sine';
       kick.frequency.setValueAtTime(120, audioCtx.currentTime);
       kick.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.15);
-      kickGain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+      kickGain.gain.setValueAtTime(0.1, audioCtx.currentTime);
       kickGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
       kick.connect(kickGain); kickGain.connect(master);
       kick.start(); kick.stop(audioCtx.currentTime + 0.18);
@@ -1000,68 +1280,101 @@ function stopAmbient() {
 // AMBIENT LIGHTING
 // ============================================================
 function drawAmbientLighting(t) {
-  // Warm glow from wall screen
+  // Wall screen glow
   const s = ROOM.wallScreen;
   const grad = ctx.createRadialGradient(
     (s.x + s.w/2) * SCALE, (s.y + s.h/2) * SCALE, 10 * SCALE,
-    (s.x + s.w/2) * SCALE, (s.y + s.h/2) * SCALE, 100 * SCALE
+    (s.x + s.w/2) * SCALE, (s.y + s.h/2) * SCALE, 120 * SCALE
   );
   grad.addColorStop(0, 'rgba(201,168,76,0.04)');
   grad.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, VW * SCALE, VH * SCALE);
 
-  // Window moonlight — cool blue
+  // Window moonlight
   const w = ROOM.window;
   const grad2 = ctx.createRadialGradient(
     (w.x + w.w/2) * SCALE, (w.y + w.h/2) * SCALE, 5 * SCALE,
-    (w.x + w.w/2) * SCALE, (w.y + w.h) * SCALE, 80 * SCALE
+    (w.x + w.w/2) * SCALE, (w.y + w.h) * SCALE, 90 * SCALE
   );
-  grad2.addColorStop(0, 'rgba(150,160,200,0.03)');
+  grad2.addColorStop(0, 'rgba(150,160,200,0.04)');
   grad2.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = grad2;
   ctx.fillRect(0, 0, VW * SCALE, VH * SCALE);
 
-  // Glenn's monitor glow
+  // Glenn's green glow
   const g = ROOM.glennDesk;
   const grad3 = ctx.createRadialGradient(
     (g.x + g.w/2) * SCALE, (g.y - 10) * SCALE, 5 * SCALE,
-    (g.x + g.w/2) * SCALE, (g.y - 10) * SCALE, 40 * SCALE
+    (g.x + g.w/2) * SCALE, (g.y - 10) * SCALE, 45 * SCALE
   );
-  grad3.addColorStop(0, 'rgba(0,255,65,0.03)');
+  grad3.addColorStop(0, 'rgba(0,255,65,0.04)');
   grad3.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = grad3;
+  ctx.fillRect(0, 0, VW * SCALE, VH * SCALE);
+
+  // Mallory's monitor glow — warm purple
+  const m = ROOM.malloryDesk;
+  const grad4 = ctx.createRadialGradient(
+    (m.x + m.w/2) * SCALE, (m.y - 10) * SCALE, 5 * SCALE,
+    (m.x + m.w/2) * SCALE, (m.y - 10) * SCALE, 35 * SCALE
+  );
+  grad4.addColorStop(0, 'rgba(200,100,255,0.03)');
+  grad4.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad4;
   ctx.fillRect(0, 0, VW * SCALE, VH * SCALE);
 }
 
 // ============================================================
-// BOOKSHELF (decorative)
+// RUG
 // ============================================================
-function drawBookshelf() {
-  const bx = 420, by = 40, bw = 45, bh = 80;
-  // Shelf frame
-  ctx.fillStyle = COL.darkWood;
-  ctx.fillRect(bx * SCALE, by * SCALE, bw * SCALE, bh * SCALE);
-  // Shelves
-  for (let sy = 0; sy < 4; sy++) {
-    const shelfY = by + 3 + sy * 20;
-    ctx.fillStyle = '#3a2515';
-    ctx.fillRect((bx + 2) * SCALE, shelfY * SCALE, (bw - 4) * SCALE, 2 * SCALE);
-    // Books
-    const bookColors = ['#4a1520', '#1a3a2a', '#C9A84C', '#2a2040', '#5a2010', '#1a2a4a'];
-    let bookX = bx + 3;
-    for (let b = 0; b < 5; b++) {
-      const bookW = 3 + Math.floor(Math.random() * 0.1 + 3);
-      const bookH = 14 + (b % 3) * 2;
-      ctx.fillStyle = bookColors[(sy * 5 + b) % bookColors.length];
-      ctx.fillRect(bookX * SCALE, (shelfY - bookH + 2) * SCALE, bookW * SCALE, bookH * SCALE);
-      bookX += bookW + 1;
-    }
+function drawRug() {
+  const rx = 160, ry = 225, rw = 160, rh = 50;
+  ctx.fillStyle = 'rgba(74,21,32,0.3)';
+  ctx.fillRect(rx * SCALE, ry * SCALE, rw * SCALE, rh * SCALE);
+  // Border
+  ctx.fillStyle = 'rgba(201,168,76,0.15)';
+  ctx.fillRect(rx * SCALE, ry * SCALE, rw * SCALE, SCALE);
+  ctx.fillRect(rx * SCALE, (ry + rh - 1) * SCALE, rw * SCALE, SCALE);
+  ctx.fillRect(rx * SCALE, ry * SCALE, SCALE, rh * SCALE);
+  ctx.fillRect((rx + rw - 1) * SCALE, ry * SCALE, SCALE, rh * SCALE);
+  // Inner border
+  ctx.fillStyle = 'rgba(201,168,76,0.08)';
+  ctx.fillRect((rx + 3) * SCALE, (ry + 3) * SCALE, (rw - 6) * SCALE, SCALE);
+  ctx.fillRect((rx + 3) * SCALE, (ry + rh - 4) * SCALE, (rw - 6) * SCALE, SCALE);
+  // Pattern
+  for (let px = rx + 8; px < rx + rw - 8; px += 16) {
+    ctx.fillStyle = 'rgba(201,168,76,0.06)';
+    ctx.fillRect(px * SCALE, (ry + rh/2 - 1) * SCALE, 8 * SCALE, 2 * SCALE);
   }
-  // Gold trim
-  ctx.fillStyle = 'rgba(201,168,76,0.2)';
-  ctx.fillRect(bx * SCALE, by * SCALE, bw * SCALE, SCALE);
-  ctx.fillRect(bx * SCALE, (by + bh - 1) * SCALE, bw * SCALE, SCALE);
+}
+
+// ============================================================
+// CEILING LAMP
+// ============================================================
+function drawCeilingLamp(t) {
+  const lx = 240, ly = 4;
+  // Chain
+  ctx.fillStyle = 'rgba(201,168,76,0.4)';
+  ctx.fillRect(lx * SCALE, ly * SCALE, SCALE, 12 * SCALE);
+  // Lamp shade
+  ctx.fillStyle = '#2C1810';
+  ctx.fillRect((lx - 8) * SCALE, (ly + 12) * SCALE, 17 * SCALE, 6 * SCALE);
+  ctx.fillStyle = 'rgba(201,168,76,0.3)';
+  ctx.fillRect((lx - 8) * SCALE, (ly + 12) * SCALE, 17 * SCALE, SCALE);
+  // Light glow
+  const flicker = 0.03 + Math.sin(t * 8) * 0.005;
+  const grad = ctx.createRadialGradient(
+    lx * SCALE, (ly + 18) * SCALE, 2 * SCALE,
+    lx * SCALE, (ly + 40) * SCALE, 60 * SCALE
+  );
+  grad.addColorStop(0, `rgba(255,220,150,${flicker})`);
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, VW * SCALE, VH * SCALE);
+  // Bulb
+  ctx.fillStyle = `rgba(255,240,200,${0.6 + Math.sin(t * 8) * 0.1})`;
+  ctx.fillRect((lx - 1) * SCALE, (ly + 18) * SCALE, 3 * SCALE, 3 * SCALE);
 }
 
 // ============================================================
@@ -1074,20 +1387,29 @@ function gameLoop() {
   ctx.fillRect(0, 0, W, H);
 
   drawWalls();
+  drawCeilingLamp(time);
   drawWindow(time);
   drawWallClock(time);
   drawWallScreen(time);
   drawBookshelf();
+  drawScoutStation(time);
 
   drawDesk(ROOM.cloeDesk, 2, '#001a00');
   drawDesk(ROOM.glennDesk, 3, '#001a00');
+  drawDesk(ROOM.malloryDesk, 2, '#1a001a');
   drawTradingTerminal(time);
-  drawPennyStation();
+  drawMalloryMonitor(time);
 
   drawFloor();
+  drawRug();
 
   drawCouch();
   drawCoffeeMachine(time);
+
+  // Plants
+  drawPlant(ROOM.plant1.x, ROOM.plant1.y, 10, time);
+  drawPlant(ROOM.plant2.x, ROOM.plant2.y, 8, time + 1);
+  drawPlant(ROOM.plant3.x, ROOM.plant3.y, 10, time + 2);
 
   drawAmbientLighting(time);
 
@@ -1098,10 +1420,10 @@ function gameLoop() {
   updateParticles(1/60);
   drawParticles();
 
-  // Vignette — deeper, moodier
+  // Vignette
   const grad = ctx.createRadialGradient(W/2, H/2, W * 0.25, W/2, H/2, W * 0.65);
   grad.addColorStop(0, 'rgba(0,0,0,0)');
-  grad.addColorStop(1, 'rgba(0,0,0,0.55)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.5)');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
 
